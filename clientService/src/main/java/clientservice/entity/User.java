@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = "password")
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "user")
 public class User {

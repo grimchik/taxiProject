@@ -42,6 +42,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+    </dependency>
+
+    <!--<dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-gateway</artifactId>
     </dependency>
@@ -49,7 +54,7 @@
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-    </dependency>
+    </dependency>-->
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -93,6 +98,19 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-maven-plugin</artifactId>
+          <version>4.31.1</version>
+          <configuration>
+            <changeLogFile>src/main/resources/db/changelog/db.changelog-master.xml</changeLogFile>
+            <url>jdbc:postgresql://localhost:5432/taxiproject</url>
+            <username>postgres</username>
+            <password>password</password>
+            <driver>org.postgresql.Driver</driver>
+          </configuration>
+        </plugin>
+
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
