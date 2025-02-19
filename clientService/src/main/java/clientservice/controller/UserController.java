@@ -24,27 +24,46 @@ public class UserController {
     }
 
     @DeleteMapping("/{username}")
-    public ResponseEntity<?> deleteUser(@PathVariable("username") String username)
+    public ResponseEntity<?> deleteUserByUsername(@PathVariable("username") String username)
     {
-        userService.deleteUser(username);
+        userService.deleteUserByUsername(username);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/change-password")
-    public ResponseEntity<String> changePassword(@Valid @RequestBody UserWithUsernameAndPasswordDTO userWithUsernameAndPasswordDTO)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUserById(@PathVariable("id") Long Id)
     {
-        return new ResponseEntity<>(userService.changePasswordByUsername(userWithUsernameAndPasswordDTO),HttpStatus.OK);
+        userService.deleteUserById(Id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/change-phone")
-    public ResponseEntity<String> changePhone(@Valid @RequestBody UserWithUsernameAndPhoneDTO userWithUsernameAndPasswordDTO)
+    @PatchMapping("/change-password/{id}")
+    public ResponseEntity<String> changePassword(@RequestBody String password,@PathVariable("id") Long Id)
     {
-        return new ResponseEntity<>(userService.changePhoneByUsername(userWithUsernameAndPasswordDTO),HttpStatus.OK);
+        return new ResponseEntity<>(userService.changePasswordById(Id,password),HttpStatus.OK);
+    }
+
+    @PatchMapping("/change-phone/{id}")
+    public ResponseEntity<String> changePhone(@RequestBody String phone,@PathVariable("id") Long Id)
+    {
+        return new ResponseEntity<>(userService.changePhoneById(Id,phone),HttpStatus.OK);
+    }
+
+    @PatchMapping("/change-username/{id}")
+    public ResponseEntity<String> changeUsername(@RequestBody String username,@PathVariable("id") Long Id)
+    {
+        return new ResponseEntity<>(userService.changeUsernameById(Id,username),HttpStatus.OK);
     }
 
     @GetMapping("/profile/{id}")
     public ResponseEntity<?> getProfile(@PathVariable("id") Long id)
     {
         return new ResponseEntity<>(userService.getUserProfileById(id),HttpStatus.OK);
+    }
+
+    @PutMapping("/change-profile/{id}")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UserDTO userDTO,@PathVariable("id") Long Id)
+    {
+        return new ResponseEntity<>(userService.updateProfile(Id,userDTO),HttpStatus.OK);
     }
 }

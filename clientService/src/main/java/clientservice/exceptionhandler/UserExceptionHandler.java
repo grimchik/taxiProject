@@ -19,7 +19,7 @@ public class UserExceptionHandler {
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<?> handleEntityExsistsException(EntityExistsException ex)
     {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -43,13 +43,13 @@ public class UserExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex)
     {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(SamePasswordException.class)
     public ResponseEntity<?> handleSamePasswordException(SamePasswordException ex)
     {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.CONFLICT);
     }
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<?> handleIllegalStateException(IllegalStateException ex)
