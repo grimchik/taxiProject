@@ -9,14 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class UserWithUsernameAndPasswordDTO {
     @NotBlank(message = "username cannot be empty")
     private String username;
     @NotBlank(message = "password cannot be empty")
     private String password;
-    @Pattern(
-            regexp = "^\\+375\\d{7}$",
-            message = "phone number must be in the format +375DDDDDDDDD"
-    )
-    private String phone;
 }
