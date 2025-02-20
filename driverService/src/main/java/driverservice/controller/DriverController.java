@@ -28,4 +28,22 @@ public class DriverController {
     {
         return new ResponseEntity<>(driverService.createDriver(driverDTO),HttpStatus.CREATED);
     }
+
+    @PutMapping("/change-profile/{id}")
+    public ResponseEntity<?> updateProfile(@PathVariable("id") Long id,@Valid @RequestBody DriverDTO driverDTO)
+    {
+        return new ResponseEntity<>(driverService.updateProfile(id,driverDTO),HttpStatus.OK);
+    }
+
+    @PatchMapping("/change-password/{id}")
+
+    @PatchMapping("/change-username/{id}")
+
+    @PatchMapping("/change-phone/{id}")
+
+    @PatchMapping("/change-name/{id}")
+
+    @DeleteMapping("/{id}")
+
+
 }
