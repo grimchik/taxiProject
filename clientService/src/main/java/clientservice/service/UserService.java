@@ -1,9 +1,6 @@
 package clientservice.service;
 
-import clientservice.dto.UserDTO;
-import clientservice.dto.UserWithUsernameAndPasswordDTO;
-import clientservice.dto.UserWithUsernameAndPhoneDTO;
-import clientservice.dto.UserWithoutPasswordDTO;
+import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
 import clientservice.mapper.UserMapper;
@@ -21,13 +18,16 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     public String createUser(UserDTO userDTO) throws EntityExistsException {
         if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new EntityExistsException("User with the same username already exists");
@@ -41,20 +41,9 @@ public class UserService {
         return "User registered successfully";
     }
 
-    public void deleteUserByUsername(String username) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User with " + username + " not found");
-        }
-        User user = userOptional.get();
-        if (user.getIsDeleted()) {
-            throw new IllegalStateException("User with " + username + " has already been deleted");
-        }
-        userRepository.softDeleteByUsername(username);
-    }
-
-    public void deleteUserById(Long Id) {
-        Optional<User> userOptional = userRepository.findById(Id);
+    @Transactional
+    public void deleteUserById(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isEmpty()) {
             throw new EntityNotFoundException("User not found");
         }
@@ -65,8 +54,8 @@ public class UserService {
         userRepository.softDeleteByUsername(user.getUsername());
     }
 
-    private User findActiveUserById(Long Id) {
-        Optional<User> userOptional = userRepository.findById(Id);
+    private User findActiveUserById(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isEmpty()) {
             throw new EntityNotFoundException("User not found");
         }
@@ -78,61 +67,61 @@ public class UserService {
     }
 
     @Transactional
-    public String changePasswordById(Long Id, String password) {
-        User user = findActiveUserById(Id);
-
-        if (passwordEncoder.matches(password, user.getPassword())) {
+    public String changePasswordById(Long id, PasswordDTO password) {
+        User user = findActiveUserById(id);
+        if (passwordEncoder.matches(password.getPassword(), user.getPassword())) {
             throw new SamePasswordException("The new password cannot be the same as the old password.");
         }
 
-        user.setPassword(passwordEncoder.encode(password));
+        user.setPassword(passwordEncoder.encode(password.getPassword()));
         userRepository.save(user);
         return "Password changed successfully";
     }
 
     @Transactional
-    public String changePhoneById(Long Id, String phone) {
-        User user = findActiveUserById(Id);
+    public String changePhoneById(Long id, PhoneDTO phone) {
+        User user = findActiveUserById(id);
 
-        if (userRepository.findByPhone(phone).isPresent()) {
+        if (userRepository.findByPhone(phone.getPhone()).isPresent()) {
             throw new EntityExistsException("User with the same phone already exists");
         }
 
-        user.setPhone(phone);
+        user.setPhone(phone.getPhone());
         userRepository.save(user);
         return "Phone changed successfully";
     }
 
     @Transactional
-    public String changeUsernameById(Long Id,String username)
+    public String changeUsernameById(Long id, UsernameDTO username)
     {
-        User user = findActiveUserById(Id);
-        if (userRepository.findByUsername(username).isPresent())
+        User user = findActiveUserById(id);
+        if (userRepository.findByUsername(username.getUsername()).isPresent())
         {
             throw new EntityExistsException("User with the same username already exists");
         }
-        user.setUsername(username);
+        user.setUsername(username.getUsername());
+        userRepository.save(user);
         return "Username changed successfully";
     }
 
-    public UserWithoutPasswordDTO getUserProfileById(Long Id)
+    public UserWithoutPasswordDTO getUserProfileById(Long id)
     {
-        User user = userRepository.findById(Id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userWithoutPasswordMapper.toDTO(user);
     }
 
     @Transactional
-    public UserWithoutPasswordDTO updateProfile(Long Id,UserDTO userDTO)
+    public UserWithoutPasswordDTO updateProfile(Long id,UserDTO userDTO)
     {
-        Optional<User> userOptional = userRepository.findById(Id);
+        Optional<User> userOptional = userRepository.findById(id);
         if(userOptional.isEmpty())
         {
             throw new EntityNotFoundException("User with " + userDTO.getUsername() + " not found");
         }
-        findActiveUserById(Id);
+        findActiveUserById(id);
         User user= userOptional.get();
-        if (userRepository.findByUsername(user.getUsername()).isPresent() || userRepository.findByPhone(user.getPhone()).isPresent())
+        if ((userRepository.findByUsername(userDTO.getUsername()).isPresent() && !userDTO.getUsername().equals(user.getUsername()))|| (userRepository.findByPhone(userDTO.getPhone()).isPresent() && !userDTO.getPhone().equals(user.getPhone())))
         {
             throw new EntityExistsException("User with this username or phone already exists");
         }

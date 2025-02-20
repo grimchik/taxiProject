@@ -1,58 +1,52 @@
 package clientservice.controller;
 
-import clientservice.dto.UserDTO;
-import clientservice.dto.UserWithUsernameAndPasswordDTO;
-import clientservice.dto.UserWithUsernameAndPhoneDTO;
-import clientservice.dto.UserWithoutPasswordDTO;
+import clientservice.dto.*;
 import clientservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    public UserController (UserService userService)
+    {
+        this.userService=userService;
+    }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signUpUser(@Valid @RequestBody UserDTO userDTO)
+    public ResponseEntity<?> signUpUser(@RequestBody @Valid UserDTO userDTO)
     {
         return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{username}")
-    public ResponseEntity<?> deleteUserByUsername(@PathVariable("username") String username)
-    {
-        userService.deleteUserByUsername(username);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable("id") Long Id)
+    public ResponseEntity<?> deleteUserById(@PathVariable("id") Long id)
     {
-        userService.deleteUserById(Id);
+        userService.deleteUserById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/change-password/{id}")
-    public ResponseEntity<String> changePassword(@RequestBody String password,@PathVariable("id") Long Id)
+    public ResponseEntity<String> changePassword(@RequestBody @Valid PasswordDTO password, @PathVariable("id") Long id)
     {
-        return new ResponseEntity<>(userService.changePasswordById(Id,password),HttpStatus.OK);
+        return new ResponseEntity<>(userService.changePasswordById(id,password),HttpStatus.OK);
     }
 
     @PatchMapping("/change-phone/{id}")
-    public ResponseEntity<String> changePhone(@RequestBody String phone,@PathVariable("id") Long Id)
+    public ResponseEntity<String> changePhone(@RequestBody @Valid PhoneDTO phone, @PathVariable("id") Long id)
     {
-        return new ResponseEntity<>(userService.changePhoneById(Id,phone),HttpStatus.OK);
+        return new ResponseEntity<>(userService.changePhoneById(id,phone),HttpStatus.OK);
     }
 
     @PatchMapping("/change-username/{id}")
-    public ResponseEntity<String> changeUsername(@RequestBody String username,@PathVariable("id") Long Id)
+    public ResponseEntity<String> changeUsername(@RequestBody @Valid UsernameDTO username, @PathVariable("id") Long id)
     {
-        return new ResponseEntity<>(userService.changeUsernameById(Id,username),HttpStatus.OK);
+        return new ResponseEntity<>(userService.changeUsernameById(id,username),HttpStatus.OK);
     }
 
     @GetMapping("/profile/{id}")
@@ -62,8 +56,8 @@ public class UserController {
     }
 
     @PutMapping("/change-profile/{id}")
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody UserDTO userDTO,@PathVariable("id") Long Id)
+    public ResponseEntity<?> updateProfile(@RequestBody @Valid UserDTO userDTO,@PathVariable("id") Long id)
     {
-        return new ResponseEntity<>(userService.updateProfile(Id,userDTO),HttpStatus.OK);
+        return new ResponseEntity<>(userService.updateProfile(id,userDTO),HttpStatus.OK);
     }
 }

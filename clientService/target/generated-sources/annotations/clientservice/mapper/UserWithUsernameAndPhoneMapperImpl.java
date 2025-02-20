@@ -1,6 +1,5 @@
 package clientservice.mapper;
 
-import clientservice.dto.UserWithUsernameAndPhoneDTO;
 import clientservice.entity.User;
 import javax.annotation.processing.Generated;
 

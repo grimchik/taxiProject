@@ -15,7 +15,7 @@ public class UserDTO {
     @NotBlank(message = "password cannot be empty")
     private String password;
     @Pattern(
-            regexp = "^\\+375\\d{7}$",
+            regexp = "^\\+375\\d{9}$",
             message = "phone number must be in the format +375DDDDDDDDD"
     )
     private String phone;
