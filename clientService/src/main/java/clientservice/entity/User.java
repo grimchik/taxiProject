@@ -30,9 +30,4 @@ public class User {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
-<<<<<<< Updated upstream
-=======
-
-    //Add Roles, add connections with rides and rates
->>>>>>> Stashed changes
 }

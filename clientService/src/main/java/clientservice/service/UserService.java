@@ -4,6 +4,7 @@ import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
 import clientservice.mapper.UserMapper;
+import clientservice.mapper.UserWithIdMapper;
 import clientservice.mapper.UserWithoutPasswordMapper;
 import clientservice.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -22,7 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
-
+    private final UserWithIdMapper userWithIdMapper = UserWithIdMapper.INSTANCE;
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -104,11 +105,11 @@ public class UserService {
         return "Username changed successfully";
     }
 
-    public UserWithoutPasswordDTO getUserProfileById(Long id)
+    public UserWithIdDTO getUserProfile(String username)
     {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return userWithoutPasswordMapper.toDTO(user);
+        return userWithIdMapper.toDTO(user);
     }
 
     @Transactional

@@ -49,10 +49,10 @@ public class UserController {
         return new ResponseEntity<>(userService.changeUsernameById(id,username),HttpStatus.OK);
     }
 
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> getProfile(@PathVariable("id") Long id)
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<?> getProfile(@PathVariable("username") String username)
     {
-        return new ResponseEntity<>(userService.getUserProfileById(id),HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUserProfile(username),HttpStatus.OK);
     }
 
     @PutMapping("/change-profile/{id}")
