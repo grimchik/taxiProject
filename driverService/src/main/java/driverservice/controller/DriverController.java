@@ -1,6 +1,6 @@
 package driverservice.controller;
 
-import driverservice.dto.DriverDTO;
+import driverservice.dto.*;
 import driverservice.service.DriverService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -36,14 +36,34 @@ public class DriverController {
     }
 
     @PatchMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable("id") Long id,@Valid @RequestBody PasswordDTO passwordDTO)
+    {
+        return new ResponseEntity<>(driverService.changePasswordById(id,passwordDTO),HttpStatus.OK);
+    }
 
     @PatchMapping("/change-username/{id}")
+    public ResponseEntity<?> changeUsername(@PathVariable("id") Long id,@Valid @RequestBody UsernameDTO usernameDTO)
+    {
+        return new ResponseEntity<>(driverService.changeUsernameById(id,usernameDTO),HttpStatus.OK);
+    }
 
     @PatchMapping("/change-phone/{id}")
+    public ResponseEntity<?> changePhone(@PathVariable("id") Long id,@Valid @RequestBody PhoneDTO phoneDTO)
+    {
+        return new ResponseEntity<>(driverService.changePhoneById(id,phoneDTO),HttpStatus.OK);
+    }
 
     @PatchMapping("/change-name/{id}")
+    public ResponseEntity<?> changeName(@PathVariable("id") Long id,@Valid @RequestBody NameDTO nameDTO)
+    {
+        return new ResponseEntity<>(driverService.changeNameById(id,nameDTO),HttpStatus.OK);
+    }
 
     @DeleteMapping("/{id}")
-
+    public ResponseEntity<?> deleteDriver(@PathVariable("id") Long id)
+    {
+        driverService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }
