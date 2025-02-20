@@ -17,14 +17,14 @@ public class DriverController {
         this.driverService=driverService;
     }
 
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> getProfileById(@PathVariable("id") Long id)
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<?> getProfileById(@PathVariable("username") String username)
     {
-        return new ResponseEntity<>(driverService.getDriverProfile(id),HttpStatus.OK);
+        return new ResponseEntity<>(driverService.getDriverProfile(username),HttpStatus.OK);
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<?> getProfileById( @Valid @RequestBody DriverDTO driverDTO)
+    public ResponseEntity<?> createDriver( @Valid @RequestBody DriverDTO driverDTO)
     {
         return new ResponseEntity<>(driverService.createDriver(driverDTO),HttpStatus.CREATED);
     }
