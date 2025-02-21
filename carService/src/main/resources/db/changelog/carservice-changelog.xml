@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="1" author="grimchik">
+        <createTable tableName="cars">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="brand" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="model" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="category" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="number" type="VARCHAR(50)">
+                <constraints nullable="false" unique = "true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="grimchik">
+        <addColumn tableName="cars">
+            <column name="color" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

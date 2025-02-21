@@ -11,6 +11,7 @@
         <module name="clientService" />
         <module name="eurekaServer" />
         <module name="driverService" />
+        <module name="carService" />
       </profile>
     </annotationProcessing>
   </component>
