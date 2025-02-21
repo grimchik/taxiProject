@@ -1,12 +1,14 @@
 package carservice.service;
 
 import carservice.dto.CarDTO;
+import carservice.dto.NumberDTO;
 import carservice.entity.Car;
 import carservice.dto.CarWithIdDTO;
 import carservice.mapper.CarMapper;
 import carservice.mapper.CarWithIdMapper;
 import carservice.repository.CarRepository;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,4 +37,13 @@ public class CarService {
         return carWithIdMapper.toDTO(car);
     }
 
+    public CarWithIdDTO getCarByNumber(String number)
+    {
+        Optional<Car> carOptional = carRepository.findByNumber(number);
+        if(carOptional.isEmpty())
+        {
+            throw new EntityNotFoundException("Car not found");
+        }
+        return carWithIdMapper.toDTO(carOptional.get());
+    }
 }
