@@ -1,5 +1,6 @@
 package driverservice.exceptionhandler;
 
+import driverservice.exception.SamePasswordException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,6 +50,13 @@ public class DriverExceptionHandler {
     {
         return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(SamePasswordException.class)
+    public ResponseEntity<?> handleSamePasswordException(SamePasswordException ex)
+    {
+        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception ex)
     {
