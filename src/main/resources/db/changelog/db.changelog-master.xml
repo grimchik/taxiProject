@@ -7,5 +7,6 @@
 
     <include file="classpath:db/changelog/userservice-changelog.xml"/>
     <include file="classpath:db/changelog/driverservice-changelog.xml"/>
+    <include file="classpath:db/changelog/carservice-changelog.xml"/>
 
 </databaseChangeLog>
