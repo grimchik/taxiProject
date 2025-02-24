@@ -3,6 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/apiGateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/apiGateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/carService/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/carService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/clientService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/clientService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/driverService/src/main/java" charset="UTF-8" />
