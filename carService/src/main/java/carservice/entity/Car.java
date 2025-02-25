@@ -24,9 +24,8 @@ public class Car {
     private String description;
     @Column(name = "color",nullable = false)
     private String color;
-    @Enumerated(EnumType.STRING)
     @Column(name ="category",nullable = false)
-    private Category category;
+    private String category;
     @Column(name="number",nullable = false,unique = true)
     private String number;
 }
