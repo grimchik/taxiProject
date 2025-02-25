@@ -23,6 +23,6 @@ public class Ride {
     private Double price;
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Location> locations;
-
+    @Column(name ="created_at")
     private LocalDateTime createdAt;
 }
