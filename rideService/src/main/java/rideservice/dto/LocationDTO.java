@@ -1,0 +1,26 @@
+package rideservice.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class LocationDTO {
+
+    @NotNull(message = "Address cannot be null")
+    private String address;
+
+    @Pattern(regexp = "^(?!.*[a-zA-Z])[+-]?((1[0-7][0-9])|([1-9]?[0-9]))\\.[0-9]{1,6}$",
+            message = "Invalid latitude, should be a number with optional decimal point and no letters")
+    private String latitude;
+
+    @Pattern(regexp = "^(?!.*[a-zA-Z])[+-]?((1[0-7][0-9])|([1-9]?[0-9]))\\.[0-9]{1,6}$",
+            message = "Invalid longitude, should be a number with optional decimal point and no letters")
+    private String longitude;
+
+}
