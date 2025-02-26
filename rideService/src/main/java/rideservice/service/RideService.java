@@ -9,6 +9,7 @@ import rideservice.dto.RideWithIdDTO;
 import rideservice.dto.StatusDTO;
 import rideservice.entity.Location;
 import rideservice.entity.Ride;
+import rideservice.mapper.LocationMapper;
 import rideservice.mapper.RideWithIdMapper;
 import rideservice.repository.RideRepository;
 
@@ -21,11 +22,12 @@ import java.util.Optional;
 public class RideService {
     private final RideRepository rideRepository;
     private final RideWithIdMapper rideWithIdMapper = RideWithIdMapper.INSTANCE;
+    private final LocationMapper locationMapper = LocationMapper.INSTANCE;
     public RideService(RideRepository rideRepository)
     {
         this.rideRepository=rideRepository;
     }
-    private Double calculatePrice(List<LocationDTO> locations) {
+    private Double calculatePrice(List<?> locations) {
         return (double) locations.size() * 5.5;
     }
 
@@ -38,10 +40,7 @@ public class RideService {
         ride.setPrice(calculatePrice(rideDTO.getLocations()));
         List<Location> locations = new ArrayList<>();
         for (LocationDTO locationDTO : rideDTO.getLocations()) {
-            Location location = new Location();
-            location.setAddress(locationDTO.getAddress());
-            location.setLatitude(locationDTO.getLatitude());
-            location.setLongitude(locationDTO.getLongitude());
+            Location location = locationMapper.toEntity(locationDTO);
             location.setRide(ride);
             locations.add(location);
         }
@@ -85,18 +84,16 @@ public class RideService {
             throw new EntityNotFoundException("Ride not found");
         }
         Ride ride = rideOptional.get();
-        ride.setPrice(calculatePrice(rideDTO.getLocations()));
 
-        List<Location> locations = new ArrayList<>();
+        ride.getLocations().clear();
         for (LocationDTO locationDTO : rideDTO.getLocations()) {
-            Location location = new Location();
-            location.setAddress(locationDTO.getAddress());
-            location.setLatitude(locationDTO.getLatitude());
-            location.setLongitude(locationDTO.getLongitude());
+            Location location = locationMapper.toEntity(locationDTO);
             location.setRide(ride);
-            locations.add(location);
+            ride.getLocations().add(location);
         }
-        ride.setLocations(locations);
+
+        ride.setPrice(calculatePrice(ride.getLocations()));
+
         rideRepository.save(ride);
         return rideWithIdMapper.toDTO(ride);
     }

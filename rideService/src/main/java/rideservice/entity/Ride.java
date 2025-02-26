@@ -21,7 +21,7 @@ public class Ride {
     @Column(name ="status",nullable = false)
     private String status;
     private Double price;
-    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private List<Location> locations;
     @Column(name ="created_at")
     private LocalDateTime createdAt;
