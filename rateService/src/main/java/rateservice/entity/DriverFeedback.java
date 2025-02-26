@@ -20,7 +20,7 @@ public class DriverFeedback {
     private String comment;
 
     @Column(name ="rate",nullable = false)
-    private Double rate;
+    private Long rate;
 
     @Column(nullable = true)
     private Boolean politePassenger;

@@ -17,7 +17,7 @@ public class ClientFeedback {
     private Long id;
 
     @Column(name = "rate",nullable = false)
-    private Double rate;
+    private Long rate;
 
     @Column(nullable = true)
     private String comment;
