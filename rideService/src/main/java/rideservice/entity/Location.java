@@ -19,9 +19,9 @@ public class Location {
     @Column(name = "address",nullable = false)
     private String address;
     @Column(name = "latitude",nullable = false)
-    private double latitude;
+    private String  latitude;
     @Column(name = "longitude",nullable = false)
-    private double longitude;
+    private String longitude;
 
     @ManyToOne
     @JoinColumn(name = "ride_id")

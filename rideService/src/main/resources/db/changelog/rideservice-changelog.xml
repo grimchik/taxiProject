@@ -7,7 +7,7 @@
 
     <changeSet id="1" author="grimchik">
         <createTable tableName="rides">
-            <column name="id" type="BIGINT">
+            <column name="id" type="bigserial">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="status" type="VARCHAR(255)">
@@ -20,19 +20,19 @@
 
     <changeSet id="2" author="grimchik">
         <createTable tableName="locations">
-            <column name="id" type="BIGINT">
+            <column name="id" type="bigserial">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="address" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="latitude" type="DOUBLE">
+            <column name="latitude" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="longitude" type="DOUBLE">
+            <column name="longitude" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="ride_id" type="BIGINT"/>
+            <column name="ride_id" type="bigserial"/>
         </createTable>
     </changeSet>
 
