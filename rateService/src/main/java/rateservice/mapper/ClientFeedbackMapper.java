@@ -1,6 +1,7 @@
 package rateservice.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import rateservice.dto.ClientFeedbackDTO;
 import rateservice.entity.ClientFeedback;
