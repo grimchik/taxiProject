@@ -1,5 +1,7 @@
 package paymentservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
@@ -22,6 +24,8 @@ public class PaymentDTO
 
     private String cardNumber;
 
+    @Hidden
+    @JsonIgnore
     @AssertTrue(message = "Card number must be provided and in the correct format when payment type is CARD")
     public boolean isCardNumberValid() {
         if ("CASH".equalsIgnoreCase(paymentType)) {

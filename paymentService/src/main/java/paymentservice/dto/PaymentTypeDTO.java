@@ -1,5 +1,6 @@
 package paymentservice.dto;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ public class PaymentTypeDTO {
 
     private String cardNumber;
 
+    @Hidden
     @AssertTrue(message = "Card number must be provided and in the correct format when payment type is CARD")
     public boolean isCardNumberValid() {
         if ("CASH".equalsIgnoreCase(paymentType)) {
