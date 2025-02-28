@@ -1,4 +1,4 @@
-package com.internship.car;
+package com.internship;
 
 /**
  * Hello world!
