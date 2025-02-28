@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class PromoCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Exclude
     private Long id;
 
     @Column(name = "percent", nullable = false)
