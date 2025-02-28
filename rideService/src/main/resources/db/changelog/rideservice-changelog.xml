@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="1" author="grimchik">
+        <createTable tableName="rides">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DOUBLE"/>
+            <column name="created_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="grimchik">
+        <createTable tableName="locations">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="longitude" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ride_id" type="bigserial"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="locations"
+                baseColumnNames="ride_id"
+                constraintName="fk_locations_rides"
+                referencedTableName="rides"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
