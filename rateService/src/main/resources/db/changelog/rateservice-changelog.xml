@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="1" author="grimchik" >
+        <createTable tableName="client_feedbacks">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rate" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="clean_interior" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="safe_driving" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="nice_music" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="grimchik">
+        <createTable tableName="driver_feedbacks">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="comment" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="rate" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="polite_passenger" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="clean_passenger" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="punctuality" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
