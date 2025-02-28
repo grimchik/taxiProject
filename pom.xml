@@ -15,6 +15,7 @@
     <module>carService</module>
     <module>rateService</module>
     <module>promoCodeService</module>
+    <module>paymentService</module>
   </modules>
   <dependencyManagement>
     <dependencies>
