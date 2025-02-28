@@ -10,6 +10,6 @@
     <include file="classpath:db/changelog/carservice-changelog.xml"/>
     <include file="classpath:db/changelog/rideservice-changelog.xml"/>
     <include file="classpath:db/changelog/rateservice-changelog.xml"/>
-
+    <include file="classpath:db/changelog/promocodeservice-changelog.xml"/>
     <include file="classpath:db/changelog/paymentservice-changelog.xml"/>
 </databaseChangeLog>
