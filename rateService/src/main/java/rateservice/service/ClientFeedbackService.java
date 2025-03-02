@@ -10,6 +10,8 @@ import rateservice.entity.ClientFeedback;
 import rateservice.mapper.ClientFeedbackMapper;
 import rateservice.mapper.ClientFeedbackWithIdMapper;
 import rateservice.repository.ClientFeedbackRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 
@@ -77,5 +79,9 @@ public class ClientFeedbackService {
         clientFeedback.setNiceMusic(clientFeedbackDTO.getNiceMusic());
         clientFeedbackRepository.save(clientFeedback);
         return clientFeedbackWithIdMapper.toDTO(clientFeedback);
+    }
+
+    public Page<ClientFeedbackWithIdDTO> getAllClientFeedbacks(Pageable pageable) {
+        return clientFeedbackRepository.findAll(pageable).map(clientFeedbackWithIdMapper::toDTO);
     }
 }
