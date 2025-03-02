@@ -4,13 +4,14 @@ import clientservice.dto.*;
 import clientservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
     public UserController (UserService userService)
@@ -18,7 +19,7 @@ public class UserController {
         this.userService=userService;
     }
 
-    @PostMapping("/sign-up")
+    @PostMapping
     public ResponseEntity<?> signUpUser(@RequestBody @Valid UserDTO userDTO)
     {
         return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
@@ -31,31 +32,26 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/change-password/{id}")
-    public ResponseEntity<String> changePassword(@RequestBody @Valid PasswordDTO password, @PathVariable("id") Long id)
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> changePassword( @PathVariable("id") Long id,@RequestBody @Valid UpdateUserDTO updateUserDTO)
     {
-        return new ResponseEntity<>(userService.changePasswordById(id,password),HttpStatus.OK);
+        return new ResponseEntity<>(userService.changeUser(id,updateUserDTO),HttpStatus.OK);
     }
 
-    @PatchMapping("/change-phone/{id}")
-    public ResponseEntity<String> changePhone(@RequestBody @Valid PhoneDTO phone, @PathVariable("id") Long id)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProfile(@PathVariable("id") Long id)
     {
-        return new ResponseEntity<>(userService.changePhoneById(id,phone),HttpStatus.OK);
+        return new ResponseEntity<>(userService.getUserProfile(id),HttpStatus.OK);
     }
 
-    @PatchMapping("/change-username/{id}")
-    public ResponseEntity<String> changeUsername(@RequestBody @Valid UsernameDTO username, @PathVariable("id") Long id)
+    @GetMapping
+    public ResponseEntity<?> getAllProfiles(@RequestParam(value = "page",defaultValue = "0") Integer page,
+                                            @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
-        return new ResponseEntity<>(userService.changeUsernameById(id,username),HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllProfiles(PageRequest.of(page, size)),HttpStatus.OK);
     }
 
-    @GetMapping("/profile/{username}")
-    public ResponseEntity<?> getProfile(@PathVariable("username") String username)
-    {
-        return new ResponseEntity<>(userService.getUserProfile(username),HttpStatus.OK);
-    }
-
-    @PutMapping("/change-profile/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(@RequestBody @Valid UserDTO userDTO,@PathVariable("id") Long id)
     {
         return new ResponseEntity<>(userService.updateProfile(id,userDTO),HttpStatus.OK);

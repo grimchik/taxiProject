@@ -5,6 +5,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,48 +16,59 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Hidden
 public class PromoCodeExceptionHandler {
 
-    @ExceptionHandler(EntityExistsException.class)
-    public ResponseEntity<?> handleEntityExsistsException(EntityExistsException ex)
-    {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.CONFLICT);
-    }
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleInvalidFormat(HttpMessageNotReadableException ex) {
-        return new ResponseEntity<>("Invalid date format. Please use the format yyyy-MM-dd", HttpStatus.BAD_REQUEST);
+    public ProblemDetail handleInvalidFormat(HttpMessageNotReadableException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,"Invalid date format. Please use the format yyyy-MM-dd");
+        problemDetail.setTitle("Invalid date format");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ProblemDetail handleEntityExistException(EntityExistsException ex)
+    {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,ex.getMessage());
+        problemDetail.setTitle("Exist error");
+        return problemDetail;
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        return new ResponseEntity<>("Invalid values provided. Please check the input data.", HttpStatus.BAD_REQUEST);
+    public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                "Invalid values provided. Please check the input data.");
+        problemDetail.setTitle("Data Integrity Violation");
+        return problemDetail;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        StringBuilder errorMessage = new StringBuilder("Validation errors: ");
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errorMessage.append("Field '")
-                        .append(error.getField())
-                        .append("' - ")
-                        .append(error.getDefaultMessage())
-                        .append(". ")
-        );
-        return new  ResponseEntity<>(errorMessage.toString().trim(),HttpStatus.BAD_REQUEST);
+    public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> "Field '" + error.getField() + "' - " + error.getDefaultMessage())
+                .reduce((msg1, msg2) -> msg1 + ". " + msg2)
+                .orElse("Validation error");
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
+        problemDetail.setTitle("Validation Error");
+        return problemDetail;
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex)
-    {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.NOT_FOUND);
+    public ProblemDetail handleEntityNotFoundException(EntityNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Entity Not Found");
+        return problemDetail;
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<?> handleIllegalStateException(IllegalStateException ex)
-    {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+    public ProblemDetail handleIllegalStateException(IllegalStateException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Illegal State");
+        return problemDetail;
     }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception ex)
-    {
-        return new ResponseEntity<>(ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+    public ProblemDetail handleException(Exception ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        problemDetail.setTitle("Internal Server Error");
+        return problemDetail;
     }
 }

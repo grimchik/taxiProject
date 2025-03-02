@@ -21,7 +21,6 @@ public class CarDTO {
     private String color;
     @ValueOfEnum(enumClass = Category.class)
     private String category;
-    private Category category;
     @Pattern(
             regexp = "^[0-9]{4}[A-Z]{2}\\-[1-7]{1}$",
             message = "Number must be in format DDDDLL-D")

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rateservice.dto.ClientFeedbackDTO;
 import rateservice.dto.RateDTO;
+import rateservice.dto.UpdateClientRateDTO;
 import rateservice.service.ClientFeedbackService;
 
 @RestController
@@ -30,8 +31,8 @@ public class ClientFeedbackController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> changeRate(@PathVariable("id") Long id, @Valid @RequestBody RateDTO rateDTO) {
-        return new ResponseEntity<>(clientFeedbackService.changeRate(id, rateDTO), HttpStatus.OK);
+    public ResponseEntity<?> changeClientFeedback(@PathVariable("id") Long id, @Valid @RequestBody UpdateClientRateDTO updateClientRateDTO) {
+        return new ResponseEntity<>(clientFeedbackService.changeClientFeedback(id, updateClientRateDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -47,7 +48,7 @@ public class ClientFeedbackController {
 
     @GetMapping
     public ResponseEntity<?> getAllClientFeedbacks(@RequestParam(value = "page",defaultValue = "0") Integer page,
-                                                                         @RequestParam(value = "size",defaultValue = "5") Integer size)
+                                                   @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
         return new ResponseEntity<>(clientFeedbackService.getAllClientFeedbacks(PageRequest.of(page, size)),HttpStatus.OK);
     }

@@ -1,11 +1,11 @@
 package rateservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rateservice.dto.DriverFeedbackDTO;
-import rateservice.dto.DriverFeedbackWithIdDTO;
-import rateservice.dto.RateDTO;
+import rateservice.dto.*;
 import rateservice.entity.DriverFeedback;
 import rateservice.mapper.DriverFeedbackMapper;
 import rateservice.mapper.DriverFeedbackWithIdMapper;
@@ -48,16 +48,35 @@ public class DriverFeedbackService {
     }
 
     @Transactional
-    public String changeRate(Long id, RateDTO rateDTO)
-    {
-        Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        if (driverFeedbackOptional.isEmpty())
-        {
+    public DriverFeedbackWithIdDTO changeDriverFeedback(Long id, UpdateDriverRateDTO updateDriverRateDTO) {
+        Optional<DriverFeedback> driverFeedbackOptional =driverFeedbackRepository.findById(id);
+        if (driverFeedbackOptional.isEmpty()) {
             throw new EntityNotFoundException("Feedback from driver not found");
         }
-        DriverFeedback driverFeedback=driverFeedbackOptional.get();
-        driverFeedback.setRate(rateDTO.getRate());
-        return "Rate changed successfully";
+        DriverFeedback driverFeedback = driverFeedbackOptional.get();
+
+        if (updateDriverRateDTO.getPunctuality() != null) {
+            driverFeedback.setPunctuality(updateDriverRateDTO.getPunctuality());
+        }
+
+        if (updateDriverRateDTO.getCleanPassenger() != null) {
+            driverFeedback.setCleanPassenger(updateDriverRateDTO.getCleanPassenger());
+        }
+
+        if (updateDriverRateDTO.getPolitePassenger() != null) {
+            driverFeedback.setPolitePassenger(updateDriverRateDTO.getPolitePassenger());
+        }
+
+        if (updateDriverRateDTO.getRate() != null) {
+            driverFeedback.setRate(updateDriverRateDTO.getRate());
+        }
+
+        if (updateDriverRateDTO.getComment() != null) {
+            driverFeedback.setComment(updateDriverRateDTO.getComment());
+        }
+
+        driverFeedbackRepository.save(driverFeedback);
+        return driverFeedbackWithIdMapper.toDTO(driverFeedback);
     }
 
     @Transactional
@@ -87,5 +106,9 @@ public class DriverFeedbackService {
         driverFeedback.setPolitePassenger(driverFeedbackDTO.getPolitePassenger());
         driverFeedbackRepository.save(driverFeedback);
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
+    }
+
+    public Page<DriverFeedbackWithIdDTO> getAllDriverFeedbacks(Pageable pageable) {
+        return driverFeedbackRepository.findAll(pageable).map(driverFeedbackWithIdMapper::toDTO);
     }
 }

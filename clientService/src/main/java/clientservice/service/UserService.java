@@ -9,8 +9,8 @@ import clientservice.mapper.UserWithoutPasswordMapper;
 import clientservice.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.Id;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +29,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String createUser(UserDTO userDTO) throws EntityExistsException {
+    public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
         if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new EntityExistsException("User with the same username already exists");
         }
@@ -39,7 +39,7 @@ public class UserService {
         User user = userMapper.toEntity(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         userRepository.save(user);
-        return "User registered successfully";
+        return userWithIdMapper.toDTO(user);
     }
 
     @Transactional
@@ -67,61 +67,21 @@ public class UserService {
         return user;
     }
 
-    @Transactional
-    public String changePasswordById(Long id, PasswordDTO password) {
-        User user = findActiveUserById(id);
-        if (passwordEncoder.matches(password.getPassword(), user.getPassword())) {
-            throw new SamePasswordException("The new password cannot be the same as the old password.");
-        }
-
-        user.setPassword(passwordEncoder.encode(password.getPassword()));
-        userRepository.save(user);
-        return "Password changed successfully";
-    }
-
-    @Transactional
-    public String changePhoneById(Long id, PhoneDTO phone) {
-        User user = findActiveUserById(id);
-
-        if (userRepository.findByPhone(phone.getPhone()).isPresent()) {
-            throw new EntityExistsException("User with the same phone already exists");
-        }
-
-        user.setPhone(phone.getPhone());
-        userRepository.save(user);
-        return "Phone changed successfully";
-    }
-
-    @Transactional
-    public String changeUsernameById(Long id, UsernameDTO username)
+    public UserWithIdDTO getUserProfile(Long id)
     {
-        User user = findActiveUserById(id);
-        if (userRepository.findByUsername(username.getUsername()).isPresent())
-        {
-            throw new EntityExistsException("User with the same username already exists");
-        }
-        user.setUsername(username.getUsername());
-        userRepository.save(user);
-        return "Username changed successfully";
-    }
-
-    public UserWithIdDTO getUserProfile(String username)
-    {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userWithIdMapper.toDTO(user);
     }
 
+    public Page<UserWithIdDTO> getAllProfiles(Pageable pageable) {
+        return userRepository.findAll(pageable).map(userWithIdMapper::toDTO);
+    }
+    
     @Transactional
     public UserWithoutPasswordDTO updateProfile(Long id,UserDTO userDTO)
     {
-        Optional<User> userOptional = userRepository.findById(id);
-        if(userOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("User with " + userDTO.getUsername() + " not found");
-        }
-        findActiveUserById(id);
-        User user= userOptional.get();
+        User user= findActiveUserById(id);
         if ((userRepository.findByUsername(userDTO.getUsername()).isPresent() && !userDTO.getUsername().equals(user.getUsername()))|| (userRepository.findByPhone(userDTO.getPhone()).isPresent() && !userDTO.getPhone().equals(user.getPhone())))
         {
             throw new EntityExistsException("User with this username or phone already exists");
@@ -134,5 +94,39 @@ public class UserService {
         user.setPhone(userDTO.getPhone());
         userRepository.save(user);
         return userWithoutPasswordMapper.toDTO(user);
+    }
+
+    @Transactional
+    public UserWithIdDTO changeUser (Long id, UpdateUserDTO updateUserDTO)
+    {
+        User user = findActiveUserById(id);
+        if(updateUserDTO.getUsername() != null)
+        {
+            if (userRepository.findByUsername(updateUserDTO.getUsername()).isPresent() && !updateUserDTO.getUsername().equals(user.getUsername()))
+            {
+                throw new EntityExistsException("User with the same username already exists");
+            }
+            user.setUsername(updateUserDTO.getUsername());
+        }
+
+        if(updateUserDTO.getPhone() != null)
+        {
+            if (userRepository.findByPhone(updateUserDTO.getPhone()).isPresent() && !updateUserDTO.getPhone().equals(user.getPhone()))
+            {
+                throw new EntityExistsException("User with the same phone already exists");
+            }
+            user.setPhone(updateUserDTO.getPhone());
+        }
+
+        if (updateUserDTO.getPassword() !=null)
+        {
+            if (passwordEncoder.matches(updateUserDTO.getPassword(), user.getPassword())) {
+                throw new SamePasswordException("The new password cannot be the same as the old password.");
+            }
+            user.setPassword(updateUserDTO.getPassword());
+        }
+
+        userRepository.save(user);
+        return userWithIdMapper.toDTO(user);
     }
 }

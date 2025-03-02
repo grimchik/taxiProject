@@ -1,12 +1,15 @@
 package rideservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import liquibase.command.core.UpdateCountSqlCommandStep;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rideservice.dto.LocationDTO;
 import rideservice.dto.RideDTO;
 import rideservice.dto.RideWithIdDTO;
-import rideservice.dto.StatusDTO;
+import rideservice.dto.UpdateRideDTO;
 import rideservice.entity.Location;
 import rideservice.entity.Ride;
 import rideservice.mapper.LocationMapper;
@@ -51,16 +54,26 @@ public class RideService {
     }
 
     @Transactional
-    public String changeStatusById(Long id, StatusDTO statusDTO) {
+    public RideWithIdDTO changeRide(Long id, UpdateRideDTO updateRideDTO) {
         Optional<Ride> rideOptional = rideRepository.findById(id);
         if (rideOptional.isEmpty())
         {
             throw new EntityNotFoundException("Ride not found");
         }
         Ride ride = rideOptional.get();
-        ride.setStatus(statusDTO.getStatus());
+        if (updateRideDTO.getLocations() != null)
+        {
+            for (LocationDTO locationDTO : updateRideDTO.getLocations()) {
+                Location location = locationMapper.toEntity(locationDTO);
+                location.setRide(ride);
+                ride.getLocations().add(location);
+            }
+        }
+        if (updateRideDTO.getStatus() != null) {
+            ride.setStatus(updateRideDTO.getStatus());
+        }
         rideRepository.save(ride);
-        return "Status changed successfully";
+        return rideWithIdMapper.toDTO(ride);
     }
 
     @Transactional
@@ -75,29 +88,6 @@ public class RideService {
         rideRepository.delete(ride);
     }
 
-    @Transactional
-    public RideWithIdDTO changeLocations(Long id, RideDTO rideDTO)
-    {
-        Optional<Ride> rideOptional = rideRepository.findById(id);
-        if (rideOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Ride not found");
-        }
-        Ride ride = rideOptional.get();
-
-        ride.getLocations().clear();
-        for (LocationDTO locationDTO : rideDTO.getLocations()) {
-            Location location = locationMapper.toEntity(locationDTO);
-            location.setRide(ride);
-            ride.getLocations().add(location);
-        }
-
-        ride.setPrice(calculatePrice(ride.getLocations()));
-
-        rideRepository.save(ride);
-        return rideWithIdMapper.toDTO(ride);
-    }
-
     public RideWithIdDTO getRideById(Long id)
     {
         Optional<Ride> rideOptional = rideRepository.findById(id);
@@ -107,5 +97,9 @@ public class RideService {
         }
         Ride ride = rideOptional.get();
         return rideWithIdMapper.toDTO(ride);
+    }
+
+    public Page<RideWithIdDTO> getAllRides(Pageable pageable) {
+        return rideRepository.findAll(pageable).map(rideWithIdMapper::toDTO);
     }
 }

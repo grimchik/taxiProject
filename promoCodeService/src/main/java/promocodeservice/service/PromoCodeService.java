@@ -2,6 +2,8 @@ package promocodeservice.service;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import promocodeservice.dto.*;
@@ -35,16 +37,6 @@ public class PromoCodeService {
         return promoCodeWithIdMapper.toDTO(promoCode);
     }
 
-    public PromoCodeWithIdDTO getPromoCodeByKeyword (KeywordDTO keywordDTO)
-    {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findByKeyword(keywordDTO.getKeyword());
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        return promoCodeWithIdMapper.toDTO(promoCodeOptional.get());
-    }
-
     public PromoCodeWithIdDTO getPromoCodeById (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
@@ -53,64 +45,6 @@ public class PromoCodeService {
             throw new EntityNotFoundException("PromoCode not found");
         }
         return promoCodeWithIdMapper.toDTO(promoCodeOptional.get());
-    }
-
-    @Transactional
-    public String changeKeyWord (Long id, KeywordDTO keywordDTO)
-    {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        if (promoCodeRepository.findByKeyword(keywordDTO.getKeyword()).isPresent())
-        {
-            throw new EntityExistsException("PromoCode with the same keyword already exist");
-        }
-        PromoCode promoCode = promoCodeOptional.get();
-        promoCode.setKeyword(keywordDTO.getKeyword());
-        promoCodeRepository.save(promoCode);
-        return "Keyword changed successfully";
-    }
-
-    @Transactional
-    public String changeActivationDate (Long id, ActivationDateDTO activationDateDTO)
-    {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        PromoCode promoCode = promoCodeOptional.get();
-        promoCode.setActivationDate(activationDateDTO.getActivationDate());
-        promoCodeRepository.save(promoCode);
-        return "Activation Date changed successfully";
-    }
-
-    @Transactional
-    public String changeExpiryDate (Long id, ExpiryDateDTO expiryDateDTO)
-    {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        PromoCode promoCode = promoCodeOptional.get();
-        promoCode.setExpiryDate(expiryDateDTO.getExpiryDate());
-        promoCodeRepository.save(promoCode);
-        return "Expiry Date changed successfully";
-    }
-
-    @Transactional
-    public String changePercent (Long id, PercentDTO percentDTO) {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty()) {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        PromoCode promoCode = promoCodeOptional.get();
-        promoCode.setPercent(percentDTO.getPercent());
-        promoCodeRepository.save(promoCode);
-        return "Percent changed successfully";
     }
 
     @Transactional
@@ -135,6 +69,44 @@ public class PromoCodeService {
     }
 
     @Transactional
+    public PromoCodeWithIdDTO changePromoCode (Long id , UpdatePromoCodeDTO updatePromoCodeDTO)
+    {
+        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
+        if (promoCodeOptional.isEmpty())
+        {
+            throw new EntityNotFoundException("PromoCode not found");
+        }
+        PromoCode promoCode = promoCodeOptional.get();
+
+        if (updatePromoCodeDTO.getKeyword() !=null)
+        {
+            if (promoCodeRepository.findByKeyword(updatePromoCodeDTO.getKeyword()).isPresent() && !promoCode.getKeyword().equals(updatePromoCodeDTO.getKeyword()))
+            {
+                throw new EntityExistsException("PromoCode with the same keyword already exist");
+            }
+            promoCode.setKeyword(updatePromoCodeDTO.getKeyword());
+        }
+
+        if (updatePromoCodeDTO.getActivationDate() != null)
+        {
+            promoCode.setActivationDate(updatePromoCodeDTO.getActivationDate());
+        }
+
+        if (updatePromoCodeDTO.getExpiryDate() != null)
+        {
+            promoCode.setExpiryDate(updatePromoCodeDTO.getExpiryDate());
+        }
+
+        if (updatePromoCodeDTO.getPercent() != null)
+        {
+            promoCode.setPercent(updatePromoCodeDTO.getPercent());
+        }
+
+        promoCodeRepository.save(promoCode);
+        return promoCodeWithIdMapper.toDTO(promoCode);
+    }
+
+    @Transactional
     public void deletePromoCode (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
@@ -143,5 +115,9 @@ public class PromoCodeService {
             throw new EntityNotFoundException("PromoCode not found");
         }
         promoCodeRepository.delete(promoCodeOptional.get());
+    }
+
+    public Page<PromoCodeWithIdDTO> getAllPromoCodes(Pageable pageable) {
+        return promoCodeRepository.findAll(pageable).map(promoCodeWithIdMapper::toDTO);
     }
 }

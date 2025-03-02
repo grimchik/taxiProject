@@ -2,15 +2,17 @@ package paymentservice.dto;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class PaymentTypeDTO {
+@NoArgsConstructor
+public class UpdatePaymentDTO {
     @Pattern(regexp = "^(CARD|CASH)$", message = "Payment type must be either 'CARD' or 'CASH'")
     private String paymentType;
 
@@ -27,4 +29,7 @@ public class PaymentTypeDTO {
         }
         return true;
     }
+    @NotNull(message = "Price cannot be null")
+    @Positive(message = "Price must be a positive value")
+    private Double price;
 }

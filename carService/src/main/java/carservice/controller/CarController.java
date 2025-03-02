@@ -1,17 +1,16 @@
 package carservice.controller;
 
 import carservice.dto.CarDTO;
-import carservice.dto.CarInfoDTO;
-import carservice.dto.CategoryDTO;
-import carservice.dto.NumberDTO;
+import carservice.dto.UpdateCarDTO;
 import carservice.service.CarService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/car/")
+@RequestMapping("/api/v1/cars/")
 public class CarController {
     private final CarService carService;
     public CarController(CarService carService)
@@ -19,16 +18,23 @@ public class CarController {
         this.carService=carService;
     }
 
-    @PostMapping("/registrate-car")
+    @PostMapping
     public ResponseEntity<?> createCar (@Valid @RequestBody CarDTO carDTO)
     {
         return new ResponseEntity<>(carService.createCar(carDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{number}")
-    public ResponseEntity<?> getCar (@PathVariable("number") String number)
+    @GetMapping
+    public ResponseEntity<?> getAllCars (@RequestParam(value = "page",defaultValue = "0") Integer page,
+                                         @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
-        return new ResponseEntity<>(carService.getCarByNumber(number),HttpStatus.OK);
+        return new ResponseEntity<>(carService.getAllCars(PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCar (@PathVariable("id") Long id)
+    {
+        return new ResponseEntity<>(carService.getCarById(id),HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -38,27 +44,15 @@ public class CarController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/update-car/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateCarById(@PathVariable("id")Long id,@Valid @RequestBody CarDTO carDTO)
     {
         return new ResponseEntity<>(carService.updateCarById(id,carDTO),HttpStatus.OK);
     }
 
-    @PatchMapping("/change-number/{id}")
-    public ResponseEntity<?> changeNumberById(@PathVariable("id")Long id,@Valid @RequestBody NumberDTO numberDTO)
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> changeCar(@PathVariable("id")Long id,@Valid @RequestBody UpdateCarDTO updateCarDTO)
     {
-        return new ResponseEntity<>(carService.changeNumber(id,numberDTO),HttpStatus.OK);
-    }
-
-    @PatchMapping("/change-category/{id}")
-    public ResponseEntity<?> changeCategoryById(@PathVariable("id")Long id,@Valid @RequestBody CategoryDTO categoryDTO)
-    {
-        return new ResponseEntity<>(carService.changeCategory(id,categoryDTO),HttpStatus.OK);
-    }
-
-    @PatchMapping("/change-car-info/{id}")
-    public ResponseEntity<?> changeCarInfoById(@PathVariable("id")Long id,@Valid @RequestBody CarInfoDTO carinfoDTO)
-    {
-        return new ResponseEntity<>(carService.changeInformationAboutCar(id,carinfoDTO),HttpStatus.OK);
+        return new ResponseEntity<>(carService.changeCar(id,updateCarDTO),HttpStatus.OK);
     }
 }

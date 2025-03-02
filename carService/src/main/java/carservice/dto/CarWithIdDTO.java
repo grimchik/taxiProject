@@ -14,6 +14,6 @@ public class CarWithIdDTO {
     private String model;
     private String description;
     private String color;
-    private Category category;
+    private String category;
     private String number;
 }

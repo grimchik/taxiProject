@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import rateservice.dto.ClientFeedbackDTO;
 import rateservice.dto.ClientFeedbackWithIdDTO;
 import rateservice.dto.RateDTO;
+import rateservice.dto.UpdateClientRateDTO;
 import rateservice.entity.ClientFeedback;
 import rateservice.mapper.ClientFeedbackMapper;
 import rateservice.mapper.ClientFeedbackWithIdMapper;
@@ -46,14 +47,35 @@ public class ClientFeedbackService {
     }
 
     @Transactional
-    public String changeRate(Long id, RateDTO rateDTO) {
+    public ClientFeedbackWithIdDTO changeClientFeedback(Long id, UpdateClientRateDTO updateClientRateDTO) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
         if (clientFeedbackOptional.isEmpty()) {
             throw new EntityNotFoundException("Feedback from client not found");
         }
         ClientFeedback clientFeedback = clientFeedbackOptional.get();
-        clientFeedback.setRate(rateDTO.getRate());
-        return "Rate changed successfully";
+
+        if (updateClientRateDTO.getCleanInterior() != null) {
+            clientFeedback.setCleanInterior(updateClientRateDTO.getCleanInterior());
+        }
+
+        if (updateClientRateDTO.getNiceMusic() != null) {
+            clientFeedback.setNiceMusic(updateClientRateDTO.getNiceMusic());
+        }
+
+        if (updateClientRateDTO.getSafeDriving() != null) {
+            clientFeedback.setSafeDriving(updateClientRateDTO.getSafeDriving());
+        }
+
+        if (updateClientRateDTO.getRate() != null) {
+            clientFeedback.setRate(updateClientRateDTO.getRate());
+        }
+
+        if (updateClientRateDTO.getComment() != null) {
+            clientFeedback.setComment(updateClientRateDTO.getComment());
+        }
+
+        clientFeedbackRepository.save(clientFeedback);
+        return clientFeedbackWithIdMapper.toDTO(clientFeedback);
     }
 
     @Transactional

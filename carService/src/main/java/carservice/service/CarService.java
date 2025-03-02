@@ -7,6 +7,8 @@ import carservice.mapper.CarWithIdMapper;
 import carservice.repository.CarRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,9 +37,9 @@ public class CarService {
         return carWithIdMapper.toDTO(car);
     }
 
-    public CarWithIdDTO getCarByNumber(String number)
+    public CarWithIdDTO getCarById(Long id)
     {
-        Optional<Car> carOptional = carRepository.findByNumber(number);
+        Optional<Car> carOptional = carRepository.findById(id);
         if(carOptional.isEmpty())
         {
             throw new EntityNotFoundException("Car not found");
@@ -80,51 +82,53 @@ public class CarService {
     }
 
     @Transactional
-    public String changeNumber (Long id, NumberDTO numberDTO)
+    public CarWithIdDTO changeCar (Long id,UpdateCarDTO updateCarDTO)
     {
         Optional<Car> carOptional = carRepository.findById(id);
-        if (carOptional.isEmpty())
+        if(carOptional.isEmpty())
         {
             throw new EntityNotFoundException("Car not found");
         }
-        if (carRepository.findByNumber(numberDTO.getNumber()).isPresent())
-        {
-            throw new EntityExistsException("Car with "+ numberDTO.getNumber() +" already exists");
-        }
         Car car = carOptional.get();
-        car.setNumber(numberDTO.getNumber());
+        if(updateCarDTO.getNumber() != null)
+        {
+            if (!carOptional.get().getNumber().equals(updateCarDTO.getNumber()) &&
+                    carRepository.findByNumber(updateCarDTO.getNumber()).isPresent()) {
+                throw new EntityExistsException("Car with " + updateCarDTO.getNumber() + " already exists");
+            }
+            car.setNumber(updateCarDTO.getNumber());
+        }
+
+        if (updateCarDTO.getColor() != null)
+        {
+            car.setColor(updateCarDTO.getColor());
+        }
+
+        if (updateCarDTO.getDescription() != null)
+        {
+            car.setDescription(updateCarDTO.getDescription());
+        }
+
+        if (updateCarDTO.getCategory() != null)
+        {
+            car.setCategory(updateCarDTO.getCategory());
+        }
+
+        if(updateCarDTO.getModel() != null)
+        {
+            car.setModel(updateCarDTO.getModel());
+        }
+
+        if (updateCarDTO.getBrand() != null)
+        {
+            car.setBrand(updateCarDTO.getBrand());
+        }
+
         carRepository.save(car);
-        return "Number changed successfully";
+        return carWithIdMapper.toDTO(car);
     }
 
-    @Transactional
-    public String changeCategory(Long id, CategoryDTO categoryDTO)
-    {
-        Optional<Car> carOptional = carRepository.findById(id);
-        if (carOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Car not found");
-        }
-        Car car = carOptional.get();
-        car.setCategory(categoryDTO.getCategory());
-        carRepository.save(car);
-        return "Category changed successfully";
-    }
-
-    @Transactional
-    public String changeInformationAboutCar(Long id, CarInfoDTO carInfoDTO)
-    {
-        Optional<Car> carOptional = carRepository.findById(id);
-        if (carOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Car not found");
-        }
-        Car car = carOptional.get();
-        car.setModel(carInfoDTO.getModel());
-        car.setBrand(carInfoDTO.getBrand());
-        car.setColor(carInfoDTO.getColor());
-        car.setDescription(carInfoDTO.getDescription());
-        carRepository.save(car);
-        return "Car information changed successfully";
+    public Page<CarWithIdDTO> getAllCars(Pageable pageable) {
+        return carRepository.findAll(pageable).map(carWithIdMapper::toDTO);
     }
 }
