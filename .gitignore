@@ -2,3 +2,6 @@
 .idea/
 target/
 parent-project.iml
+*.iml
+/rideService/target
+/rideService/target
