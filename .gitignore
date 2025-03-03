@@ -5,3 +5,8 @@ parent-project.iml
 *.iml
 /rideService/target
 /rideService/target
+/apiGateway/target
+/clientService/target
+/driverService/target
+/eurekaServer/target
+/rideService/target
