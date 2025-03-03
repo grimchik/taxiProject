@@ -20,7 +20,7 @@ public class ValueOfEnumValidator implements ConstraintValidator<ValueOfEnum, St
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value == null) {
-            return false;
+            return true;
         }
 
         boolean isValid = Arrays.stream(enumClass.getEnumConstants())

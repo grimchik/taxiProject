@@ -99,28 +99,23 @@ public class CarService {
             car.setNumber(updateCarDTO.getNumber());
         }
 
-        if (updateCarDTO.getColor() != null)
-        {
+        if (updateCarDTO.getColor() != null && !updateCarDTO.getColor().isBlank()) {
             car.setColor(updateCarDTO.getColor());
         }
 
-        if (updateCarDTO.getDescription() != null)
-        {
+        if (updateCarDTO.getDescription() != null && !updateCarDTO.getDescription().isBlank()) {
             car.setDescription(updateCarDTO.getDescription());
         }
 
-        if (updateCarDTO.getCategory() != null)
-        {
+        if (updateCarDTO.getCategory() != null) {
             car.setCategory(updateCarDTO.getCategory());
         }
 
-        if(updateCarDTO.getModel() != null)
-        {
+        if (updateCarDTO.getModel() != null && !updateCarDTO.getModel().isBlank()) {
             car.setModel(updateCarDTO.getModel());
         }
 
-        if (updateCarDTO.getBrand() != null)
-        {
+        if (updateCarDTO.getBrand() != null && !updateCarDTO.getBrand().isBlank()) {
             car.setBrand(updateCarDTO.getBrand());
         }
 

@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateClientRateDTO {
-    @NotNull(message = "Rate is required")
     @Min(value = 1, message = "Rate must be at least 1")
     @Max(value = 5, message = "Rate must be at most 5")
     private Long rate;

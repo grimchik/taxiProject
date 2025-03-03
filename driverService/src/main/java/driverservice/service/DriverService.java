@@ -105,35 +105,32 @@ public class DriverService {
     public DriverWithIdDTO changeDriver (Long id, UpdateDriverDTO updateDriverDTO)
     {
         Driver driver = findActiveDriverById(id);
-        if(updateDriverDTO.getUsername() != null)
-        {
-            if (driverRepository.findByUsername(updateDriverDTO.getUsername()).isPresent() && !updateDriverDTO.getUsername().equals(driver.getUsername()))
-            {
+
+        if (updateDriverDTO.getUsername() != null && !updateDriverDTO.getUsername().isBlank()) {
+            if (driverRepository.findByUsername(updateDriverDTO.getUsername()).isPresent() &&
+                    !updateDriverDTO.getUsername().equals(driver.getUsername())) {
                 throw new EntityExistsException("Driver with the same username already exists");
             }
             driver.setUsername(updateDriverDTO.getUsername());
         }
 
-        if(updateDriverDTO.getPhone() != null)
-        {
-            if (driverRepository.findByPhone(updateDriverDTO.getPhone()).isPresent() && !updateDriverDTO.getPhone().equals(driver.getPhone()))
-            {
+        if (updateDriverDTO.getPhone() != null && !updateDriverDTO.getPhone().isBlank()) {
+            if (driverRepository.findByPhone(updateDriverDTO.getPhone()).isPresent() &&
+                    !updateDriverDTO.getPhone().equals(driver.getPhone())) {
                 throw new EntityExistsException("Driver with the same phone already exists");
             }
             driver.setPhone(updateDriverDTO.getPhone());
         }
 
-        if (updateDriverDTO.getName() != null)
-        {
+        if (updateDriverDTO.getName() != null && !updateDriverDTO.getName().isBlank()) {
             driver.setName(updateDriverDTO.getName());
         }
 
-        if (updateDriverDTO.getPassword() !=null)
-        {
+        if (updateDriverDTO.getPassword() != null && !updateDriverDTO.getPassword().isBlank()) {
             if (passwordEncoder.matches(updateDriverDTO.getPassword(), driver.getPassword())) {
                 throw new SamePasswordException("The new password cannot be the same as the old password.");
             }
-            driver.setPassword(updateDriverDTO.getPassword());
+            driver.setPassword(passwordEncoder.encode(updateDriverDTO.getPassword()));
         }
 
         driverRepository.save(driver);

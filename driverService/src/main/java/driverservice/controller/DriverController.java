@@ -25,7 +25,7 @@ public class DriverController {
         return new ResponseEntity<>(driverService.getAllDrivers(PageRequest.of(page, size)),HttpStatus.OK);
     }
 
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getDriverById(@RequestParam("id") Long id)
     {
         return new ResponseEntity<>(driverService.getDriverById(id),HttpStatus.OK);

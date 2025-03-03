@@ -67,44 +67,42 @@ public class PromoCodeService {
         promoCodeRepository.save(promoCode);
         return promoCodeWithIdMapper.toDTO(promoCode);
     }
-
     @Transactional
-    public PromoCodeWithIdDTO changePromoCode (Long id , UpdatePromoCodeDTO updatePromoCodeDTO)
-    {
-        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
-        PromoCode promoCode = promoCodeOptional.get();
+    public PromoCodeWithIdDTO changePromoCode(Long id, UpdatePromoCodeDTO updatePromoCodeDTO) {
+        PromoCode promoCode = promoCodeRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
 
-        if (updatePromoCodeDTO.getKeyword() !=null)
-        {
-            if (promoCodeRepository.findByKeyword(updatePromoCodeDTO.getKeyword()).isPresent() && !promoCode.getKeyword().equals(updatePromoCodeDTO.getKeyword()))
-            {
-                throw new EntityExistsException("PromoCode with the same keyword already exist");
+        if (updatePromoCodeDTO.getKeyword() != null) {
+            if (promoCodeRepository.findByKeyword(updatePromoCodeDTO.getKeyword()).isPresent() &&
+                    !promoCode.getKeyword().equals(updatePromoCodeDTO.getKeyword())) {
+                throw new EntityExistsException("PromoCode with the same keyword already exists");
             }
             promoCode.setKeyword(updatePromoCodeDTO.getKeyword());
         }
 
-        if (updatePromoCodeDTO.getActivationDate() != null)
-        {
+        if (updatePromoCodeDTO.getActivationDate() != null) {
             promoCode.setActivationDate(updatePromoCodeDTO.getActivationDate());
         }
 
-        if (updatePromoCodeDTO.getExpiryDate() != null)
-        {
+        if (updatePromoCodeDTO.getExpiryDate() != null) {
             promoCode.setExpiryDate(updatePromoCodeDTO.getExpiryDate());
         }
 
-        if (updatePromoCodeDTO.getPercent() != null)
-        {
+        if (promoCode.getActivationDate() != null && promoCode.getExpiryDate() != null &&
+                promoCode.getExpiryDate().isBefore(promoCode.getActivationDate())) {
+            throw new IllegalArgumentException("Expiry date must be after or equal to activation date");
+        }
+
+        if (updatePromoCodeDTO.getPercent() != null) {
             promoCode.setPercent(updatePromoCodeDTO.getPercent());
         }
 
         promoCodeRepository.save(promoCode);
+
         return promoCodeWithIdMapper.toDTO(promoCode);
     }
+
+
 
     @Transactional
     public void deletePromoCode (Long id)

@@ -97,36 +97,34 @@ public class UserService {
     }
 
     @Transactional
-    public UserWithIdDTO changeUser (Long id, UpdateUserDTO updateUserDTO)
-    {
+    public UserWithIdDTO changeUser(Long id, UpdateUserDTO updateUserDTO) {
         User user = findActiveUserById(id);
-        if(updateUserDTO.getUsername() != null)
-        {
-            if (userRepository.findByUsername(updateUserDTO.getUsername()).isPresent() && !updateUserDTO.getUsername().equals(user.getUsername()))
-            {
+
+        if (updateUserDTO.getUsername() != null && !updateUserDTO.getUsername().isBlank()) {
+            if (userRepository.findByUsername(updateUserDTO.getUsername()).isPresent() &&
+                    !updateUserDTO.getUsername().equals(user.getUsername())) {
                 throw new EntityExistsException("User with the same username already exists");
             }
             user.setUsername(updateUserDTO.getUsername());
         }
 
-        if(updateUserDTO.getPhone() != null)
-        {
-            if (userRepository.findByPhone(updateUserDTO.getPhone()).isPresent() && !updateUserDTO.getPhone().equals(user.getPhone()))
-            {
+        if (updateUserDTO.getPhone() != null && !updateUserDTO.getPhone().isBlank()) {
+            if (userRepository.findByPhone(updateUserDTO.getPhone()).isPresent() &&
+                    !updateUserDTO.getPhone().equals(user.getPhone())) {
                 throw new EntityExistsException("User with the same phone already exists");
             }
             user.setPhone(updateUserDTO.getPhone());
         }
 
-        if (updateUserDTO.getPassword() !=null)
-        {
+        if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isBlank()) {
             if (passwordEncoder.matches(updateUserDTO.getPassword(), user.getPassword())) {
                 throw new SamePasswordException("The new password cannot be the same as the old password.");
             }
-            user.setPassword(updateUserDTO.getPassword());
+            user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
 
         userRepository.save(user);
         return userWithIdMapper.toDTO(user);
     }
+
 }
