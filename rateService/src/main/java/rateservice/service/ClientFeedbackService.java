@@ -1,5 +1,6 @@
 package rateservice.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,29 +30,28 @@ public class ClientFeedbackService {
     @Transactional
     public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO) {
         ClientFeedback clientFeedback = new ClientFeedback();
+
         clientFeedback.setRate(clientFeedbackDTO.getRate());
         clientFeedback.setComment(clientFeedbackDTO.getComment());
         clientFeedback.setCleanInterior(clientFeedbackDTO.getCleanInterior());
         clientFeedback.setSafeDriving(clientFeedbackDTO.getSafeDriving());
         clientFeedback.setNiceMusic(clientFeedbackDTO.getNiceMusic());
+
         clientFeedbackRepository.save(clientFeedback);
         return clientFeedbackWithIdMapper.toDTO(clientFeedback);
     }
 
     public ClientFeedbackWithIdDTO getFeedback(Long id) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        if (clientFeedbackOptional.isEmpty()) {
-            throw new EntityNotFoundException("Feedback from client not found");
-        }
+        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
         return clientFeedbackWithIdMapper.toDTO(clientFeedbackOptional.get());
     }
 
     @Transactional
     public ClientFeedbackWithIdDTO changeClientFeedback(Long id, UpdateClientRateDTO updateClientRateDTO) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        if (clientFeedbackOptional.isEmpty()) {
-            throw new EntityNotFoundException("Feedback from client not found");
-        }
+        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+
         ClientFeedback clientFeedback = clientFeedbackOptional.get();
 
         if (updateClientRateDTO.getCleanInterior() != null) {
@@ -81,24 +81,23 @@ public class ClientFeedbackService {
     @Transactional
     public void deleteFeedback(Long id) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        if (clientFeedbackOptional.isEmpty()) {
-            throw new EntityNotFoundException("Feedback from client not found");
-        }
+        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
         clientFeedbackRepository.delete(clientFeedbackOptional.get());
     }
 
     @Transactional
     public ClientFeedbackWithIdDTO updateFeedback(Long id, ClientFeedbackDTO clientFeedbackDTO) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        if (clientFeedbackOptional.isEmpty()) {
-            throw new EntityNotFoundException("Feedback from client not found");
-        }
+        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+
         ClientFeedback clientFeedback = clientFeedbackOptional.get();
+
         clientFeedback.setRate(clientFeedbackDTO.getRate());
         clientFeedback.setComment(clientFeedbackDTO.getComment());
         clientFeedback.setCleanInterior(clientFeedbackDTO.getCleanInterior());
         clientFeedback.setSafeDriving(clientFeedbackDTO.getSafeDriving());
         clientFeedback.setNiceMusic(clientFeedbackDTO.getNiceMusic());
+
         clientFeedbackRepository.save(clientFeedback);
         return clientFeedbackWithIdMapper.toDTO(clientFeedback);
     }

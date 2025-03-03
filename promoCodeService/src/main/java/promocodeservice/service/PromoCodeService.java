@@ -25,6 +25,14 @@ public class PromoCodeService {
         this.promoCodeRepository=promoCodeRepository;
     }
 
+    private void checkPromoCodeExist(PromoCode promoCode,String keyword)
+    {
+        if (promoCodeRepository.findByKeyword(keyword).isPresent() && !promoCode.getKeyword().equals(keyword))
+        {
+            throw new EntityExistsException("PromoCode with the same keyword already exist");
+        }
+    }
+
     @Transactional
     public PromoCodeWithIdDTO createPromoCode(PromoCodeDTO promoCodeDTO)
     {
@@ -40,10 +48,7 @@ public class PromoCodeService {
     public PromoCodeWithIdDTO getPromoCodeById (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityExistsException("PromoCode not found"));
         return promoCodeWithIdMapper.toDTO(promoCodeOptional.get());
     }
 
@@ -51,15 +56,9 @@ public class PromoCodeService {
     public PromoCodeWithIdDTO updatePromoCode (Long id, PromoCodeDTO promoCodeDTO)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityExistsException("PromoCode not found"));
         PromoCode promoCode = promoCodeOptional.get();
-        if (promoCodeRepository.findByKeyword(promoCodeDTO.getKeyword()).isPresent() && !promoCode.getKeyword().equals(promoCodeDTO.getKeyword()))
-        {
-            throw new EntityExistsException("PromoCode with the same keyword already exist");
-        }
+        checkPromoCodeExist(promoCode, promoCodeDTO.getKeyword());
         promoCode.setPercent(promoCodeDTO.getPercent());
         promoCode.setExpiryDate(promoCodeDTO.getExpiryDate());
         promoCode.setKeyword(promoCodeDTO.getKeyword());
@@ -73,10 +72,7 @@ public class PromoCodeService {
                 .orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
 
         if (updatePromoCodeDTO.getKeyword() != null) {
-            if (promoCodeRepository.findByKeyword(updatePromoCodeDTO.getKeyword()).isPresent() &&
-                    !promoCode.getKeyword().equals(updatePromoCodeDTO.getKeyword())) {
-                throw new EntityExistsException("PromoCode with the same keyword already exists");
-            }
+            checkPromoCodeExist(promoCode, updatePromoCodeDTO.getKeyword());
             promoCode.setKeyword(updatePromoCodeDTO.getKeyword());
         }
 
@@ -108,10 +104,7 @@ public class PromoCodeService {
     public void deletePromoCode (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityExistsException("PromoCode not found"));
         promoCodeRepository.delete(promoCodeOptional.get());
     }
 

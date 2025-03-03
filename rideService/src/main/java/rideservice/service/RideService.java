@@ -1,5 +1,6 @@
 package rideservice.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import liquibase.command.core.UpdateCountSqlCommandStep;
 import org.springframework.data.domain.Page;
@@ -56,10 +57,7 @@ public class RideService {
     @Transactional
     public RideWithIdDTO changeRide(Long id, UpdateRideDTO updateRideDTO) {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        if (rideOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Ride not found");
-        }
+        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
         Ride ride = rideOptional.get();
         if (updateRideDTO.getLocations() != null)
         {
@@ -80,10 +78,7 @@ public class RideService {
     public void deleteRideById(Long id)
     {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        if (rideOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Ride not found");
-        }
+        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
         Ride ride = rideOptional.get();
         rideRepository.delete(ride);
     }
@@ -91,10 +86,7 @@ public class RideService {
     public RideWithIdDTO getRideById(Long id)
     {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        if (rideOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Ride not found");
-        }
+        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
         Ride ride = rideOptional.get();
         return rideWithIdMapper.toDTO(ride);
     }

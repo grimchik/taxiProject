@@ -1,7 +1,6 @@
 package driverservice.service;
 
 import driverservice.dto.*;
-import driverservice.dto.DriverWithoutPasswordDTO;
 import driverservice.entity.Driver;
 import driverservice.exception.SamePasswordException;
 import driverservice.mapper.DriverMapper;
@@ -21,19 +20,17 @@ import java.util.Optional;
 @Service
 public class DriverService {
     private final DriverRepository driverRepository;
+    private final PasswordEncoder passwordEncoder;
     private final DriverMapper driverMapper = DriverMapper.INSTANCE;
     private final DriverWithoutPasswordMapper driverWithoutPasswordMapper = DriverWithoutPasswordMapper.INSTANCE;
     private final DriverWithIdMapper driverWithIdMapper = DriverWithIdMapper.INSTANCE;
-    private final PasswordEncoder passwordEncoder;
 
-    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder)
-    {
-        this.driverRepository=driverRepository;
+    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder) {
+        this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
-    public DriverWithIdDTO createDriver(DriverDTO driverDTO) throws EntityExistsException{
+    public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
         if (driverRepository.findByUsername(driverDTO.getUsername()).isPresent()) {
             throw new EntityExistsException("Driver with the same username already exists");
         }
@@ -41,28 +38,45 @@ public class DriverService {
             throw new EntityExistsException("Driver with the same phone already exists");
         }
         Driver driver = driverMapper.toEntity(driverDTO);
-        driver.setPassword(passwordEncoder.encode(driver.getPassword()));
+        driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
         driverRepository.save(driver);
-        return  driverWithIdMapper.toDTO(driver);
+        return driverWithIdMapper.toDTO(driver);
     }
 
     @Transactional
-    public DriverWithoutPasswordDTO updateProfile(Long id ,DriverDTO driverDTO)
-    {
+    public void deleteById(Long id) {
         Driver driver = findActiveDriverById(id);
-        if (driverRepository.findByUsername(driverDTO.getUsername())
-                .filter(d -> !d.getId().equals(driver.getId())).isPresent()) {
-            throw new EntityExistsException("Driver with this username already exists");
-        }
+        driverRepository.softDeleteByUsername(driver.getUsername());
+    }
 
-        if (driverRepository.findByPhone(driverDTO.getPhone())
-                .filter(d -> !d.getId().equals(driver.getId())).isPresent()) {
-            throw new EntityExistsException("Driver with this phone already exists");
-        }
+    private Driver findActiveDriverById(Long id) {
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        checkIsDeleted(driver.getIsDeleted());
+        return driver;
+    }
 
-        if (passwordEncoder.matches(driverDTO.getPassword(), driver.getPassword())) {
-            throw new SamePasswordException("The new password cannot be the same as the old password.");
+    private void checkIsDeleted(boolean deleted) {
+        if (deleted) {
+            throw new IllegalStateException("Driver has already been deleted");
         }
+    }
+
+    public DriverWithIdDTO getDriverById(Long id) {
+        Driver driver = findActiveDriverById(id);
+        return driverWithIdMapper.toDTO(driver);
+    }
+
+    public Page<DriverWithIdDTO> getAllDrivers(Pageable pageable) {
+        return driverRepository.findAll(pageable).map(driverWithIdMapper::toDTO);
+    }
+
+    @Transactional
+    public DriverWithoutPasswordDTO updateProfile(Long id, DriverDTO driverDTO) {
+        Driver driver = findActiveDriverById(id);
+        checkUsername(driver, driverDTO.getUsername());
+        checkPhone(driver, driverDTO.getPhone());
+        checkPassword(driver, driverDTO.getPassword());
         driver.setName(driverDTO.getName());
         driver.setUsername(driverDTO.getUsername());
         driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
@@ -71,54 +85,17 @@ public class DriverService {
         return driverWithoutPasswordMapper.toDTO(driver);
     }
 
-    private Driver findActiveDriverById(Long id) {
-        Optional<Driver> driverOptional = driverRepository.findById(id);
-        if (driverOptional.isEmpty()) {
-            throw new EntityNotFoundException("Driver not found");
-        }
-        Driver driver = driverOptional.get();
-        if (driver.getIsDeleted()) {
-            throw new IllegalStateException("Driver has already been deleted");
-        }
-        return driver;
-    }
-
-
     @Transactional
-    public void deleteById(Long id)
-    {
-        Driver driver = findActiveDriverById(id);
-        driverRepository.softDeleteByUsername(driver.getUsername());
-    }
-
-    public Page<DriverWithIdDTO> getAllDrivers(Pageable pageable) {
-        return driverRepository.findAll(pageable).map(driverWithIdMapper::toDTO);
-    }
-
-    public DriverWithIdDTO getDriverById (Long id)
-    {
-        Driver driver = findActiveDriverById(id);
-        return driverWithIdMapper.toDTO(driver);
-    }
-
-    @Transactional
-    public DriverWithIdDTO changeDriver (Long id, UpdateDriverDTO updateDriverDTO)
-    {
+    public DriverWithIdDTO changeDriver(Long id, UpdateDriverDTO updateDriverDTO) {
         Driver driver = findActiveDriverById(id);
 
         if (updateDriverDTO.getUsername() != null && !updateDriverDTO.getUsername().isBlank()) {
-            if (driverRepository.findByUsername(updateDriverDTO.getUsername()).isPresent() &&
-                    !updateDriverDTO.getUsername().equals(driver.getUsername())) {
-                throw new EntityExistsException("Driver with the same username already exists");
-            }
+            checkUsername(driver, updateDriverDTO.getUsername());
             driver.setUsername(updateDriverDTO.getUsername());
         }
 
         if (updateDriverDTO.getPhone() != null && !updateDriverDTO.getPhone().isBlank()) {
-            if (driverRepository.findByPhone(updateDriverDTO.getPhone()).isPresent() &&
-                    !updateDriverDTO.getPhone().equals(driver.getPhone())) {
-                throw new EntityExistsException("Driver with the same phone already exists");
-            }
+            checkPhone(driver, updateDriverDTO.getPhone());
             driver.setPhone(updateDriverDTO.getPhone());
         }
 
@@ -127,9 +104,7 @@ public class DriverService {
         }
 
         if (updateDriverDTO.getPassword() != null && !updateDriverDTO.getPassword().isBlank()) {
-            if (passwordEncoder.matches(updateDriverDTO.getPassword(), driver.getPassword())) {
-                throw new SamePasswordException("The new password cannot be the same as the old password.");
-            }
+            checkPassword(driver, updateDriverDTO.getPassword());
             driver.setPassword(passwordEncoder.encode(updateDriverDTO.getPassword()));
         }
 
@@ -137,4 +112,23 @@ public class DriverService {
         return driverWithIdMapper.toDTO(driver);
     }
 
+    private void checkUsername(Driver driver, String username) {
+        if (driverRepository.findByUsername(username).isPresent() &&
+                !username.equals(driver.getUsername())) {
+            throw new EntityExistsException("Driver with the same username already exists");
+        }
+    }
+
+    private void checkPhone(Driver driver, String phone) {
+        if (driverRepository.findByPhone(phone).isPresent() &&
+                !phone.equals(driver.getPhone())) {
+            throw new EntityExistsException("Driver with the same phone already exists");
+        }
+    }
+
+    private void checkPassword(Driver driver, String password) {
+        if (passwordEncoder.matches(password, driver.getPassword())) {
+            throw new SamePasswordException("The new password cannot be the same as the old password.");
+        }
+    }
 }

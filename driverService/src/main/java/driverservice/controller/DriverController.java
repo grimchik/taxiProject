@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +27,7 @@ public class DriverController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDriverById(@RequestParam("id") Long id)
+    public ResponseEntity<?> getDriverById(@PathVariable("id") Long id)
     {
         return new ResponseEntity<>(driverService.getDriverById(id),HttpStatus.OK);
     }

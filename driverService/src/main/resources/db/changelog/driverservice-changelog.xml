@@ -28,4 +28,8 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="2" author="grimchik">
+        <modifyDataType tableName="drivers" columnName="phone" newDataType="varchar(30)"/>
+    </changeSet>
+
 </databaseChangeLog>

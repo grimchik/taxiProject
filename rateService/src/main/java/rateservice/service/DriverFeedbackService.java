@@ -1,5 +1,6 @@
 package rateservice.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +29,12 @@ public class DriverFeedbackService {
     public DriverFeedbackWithIdDTO createFeedback(DriverFeedbackDTO driverFeedbackDTO)
     {
         DriverFeedback driverFeedback=new DriverFeedback();
+
         driverFeedback.setRate(driverFeedbackDTO.getRate());
         driverFeedback.setComment(driverFeedbackDTO.getComment());
         driverFeedback.setPunctuality(driverFeedbackDTO.getPunctuality());
         driverFeedback.setCleanPassenger(driverFeedbackDTO.getCleanPassenger());
+
         driverFeedback.setPolitePassenger(driverFeedbackDTO.getPolitePassenger());
         driverFeedbackRepository.save(driverFeedback);
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
@@ -40,19 +43,15 @@ public class DriverFeedbackService {
     public DriverFeedbackWithIdDTO getFeedback(Long id)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        if (driverFeedbackOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Feedback from driver not found");
-        }
+        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
         return driverFeedbackWithIdMapper.toDTO(driverFeedbackOptional.get());
     }
 
     @Transactional
     public DriverFeedbackWithIdDTO changeDriverFeedback(Long id, UpdateDriverRateDTO updateDriverRateDTO) {
         Optional<DriverFeedback> driverFeedbackOptional =driverFeedbackRepository.findById(id);
-        if (driverFeedbackOptional.isEmpty()) {
-            throw new EntityNotFoundException("Feedback from driver not found");
-        }
+        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+
         DriverFeedback driverFeedback = driverFeedbackOptional.get();
 
         if (updateDriverRateDTO.getPunctuality() != null) {
@@ -83,10 +82,7 @@ public class DriverFeedbackService {
     public void deleteFeedback(Long id)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        if (driverFeedbackOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Feedback from driver not found");
-        }
+        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
         driverFeedbackRepository.delete(driverFeedbackOptional.get());
     }
 
@@ -94,16 +90,15 @@ public class DriverFeedbackService {
     public DriverFeedbackWithIdDTO updateFeedback(Long id, DriverFeedbackDTO driverFeedbackDTO)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        if (driverFeedbackOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("Feedback from driver not found");
-        }
+        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+
         DriverFeedback driverFeedback = driverFeedbackOptional.get();
         driverFeedback.setRate(driverFeedbackDTO.getRate());
         driverFeedback.setComment(driverFeedbackDTO.getComment());
         driverFeedback.setPunctuality(driverFeedbackDTO.getPunctuality());
         driverFeedback.setCleanPassenger(driverFeedbackDTO.getCleanPassenger());
         driverFeedback.setPolitePassenger(driverFeedbackDTO.getPolitePassenger());
+
         driverFeedbackRepository.save(driverFeedback);
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
     }

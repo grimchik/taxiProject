@@ -45,32 +45,29 @@ public class UserService {
     @Transactional
     public void deleteUserById(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User not found");
-        }
+        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
         User user = userOptional.get();
-        if (user.getIsDeleted()) {
-            throw new IllegalStateException("User with " + user.getUsername() + " has already been deleted");
-        }
+        checkIsDeleted(user.getIsDeleted());
         userRepository.softDeleteByUsername(user.getUsername());
     }
-
-    private User findActiveUserById(Long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User not found");
-        }
-        User user = userOptional.get();
-        if (user.getIsDeleted()) {
+    private void checkIsDeleted(boolean deleted)
+    {
+        if (deleted)
+        {
             throw new IllegalStateException("User has already been deleted");
         }
+    }
+    private User findActiveUserById(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
+        User user = userOptional.get();
+        checkIsDeleted(user.getIsDeleted());
         return user;
     }
 
     public UserWithIdDTO getUserProfile(Long id)
     {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userWithIdMapper.toDTO(user);
     }
 
@@ -96,30 +93,45 @@ public class UserService {
         return userWithoutPasswordMapper.toDTO(user);
     }
 
+    private void checkUsername (User user, String username)
+    {
+        if (userRepository.findByUsername(username).isPresent() &&
+                !username.equals(user.getUsername())) {
+            throw new EntityExistsException("User with the same username already exists");
+        }
+    }
+
+    private void checkPhone (User user, String phone)
+    {
+        if (userRepository.findByPhone(phone).isPresent() &&
+                !phone.equals(user.getPhone())) {
+            throw new EntityExistsException("User with the same phone already exists");
+        }
+    }
+
+    private void checkPassword (User user, String password)
+    {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            throw new SamePasswordException("The new password cannot be the same as the old password.");
+        }
+    }
+
     @Transactional
     public UserWithIdDTO changeUser(Long id, UpdateUserDTO updateUserDTO) {
         User user = findActiveUserById(id);
 
         if (updateUserDTO.getUsername() != null && !updateUserDTO.getUsername().isBlank()) {
-            if (userRepository.findByUsername(updateUserDTO.getUsername()).isPresent() &&
-                    !updateUserDTO.getUsername().equals(user.getUsername())) {
-                throw new EntityExistsException("User with the same username already exists");
-            }
+            checkUsername(user,updateUserDTO.getUsername());
             user.setUsername(updateUserDTO.getUsername());
         }
 
         if (updateUserDTO.getPhone() != null && !updateUserDTO.getPhone().isBlank()) {
-            if (userRepository.findByPhone(updateUserDTO.getPhone()).isPresent() &&
-                    !updateUserDTO.getPhone().equals(user.getPhone())) {
-                throw new EntityExistsException("User with the same phone already exists");
-            }
+           checkPhone(user,updateUserDTO.getPhone());
             user.setPhone(updateUserDTO.getPhone());
         }
 
         if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isBlank()) {
-            if (passwordEncoder.matches(updateUserDTO.getPassword(), user.getPassword())) {
-                throw new SamePasswordException("The new password cannot be the same as the old password.");
-            }
+            checkPassword(user,updateUserDTO.getPassword());
             user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
 
