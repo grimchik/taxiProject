@@ -25,4 +25,6 @@ public class Ride {
     private List<Location> locations;
     @Column(name ="created_at")
     private LocalDateTime createdAt;
+    @Column(name = "user_id")
+    private Long userId;
 }

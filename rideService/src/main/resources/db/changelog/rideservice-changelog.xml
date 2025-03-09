@@ -46,4 +46,10 @@
                 onDelete="CASCADE"/>
     </changeSet>
 
+    <changeSet id="4" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="user_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

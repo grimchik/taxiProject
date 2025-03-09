@@ -1,4 +1,4 @@
-package rideservice.dto;
+package clientservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

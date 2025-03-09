@@ -7,12 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rideservice.dto.LocationDTO;
-import rideservice.dto.RideDTO;
-import rideservice.dto.RideWithIdDTO;
-import rideservice.dto.UpdateRideDTO;
+import rideservice.dto.*;
 import rideservice.entity.Location;
 import rideservice.entity.Ride;
+import rideservice.enums.Status;
 import rideservice.mapper.LocationMapper;
 import rideservice.mapper.RideWithIdMapper;
 import rideservice.repository.RideRepository;
@@ -39,6 +37,7 @@ public class RideService {
     public RideWithIdDTO createRide(RideDTO rideDTO)
     {
         Ride ride = new Ride();
+        ride.setUserId(rideDTO.getUserId());
         ride.setCreatedAt(LocalDateTime.now());
         ride.setStatus("REQUESTED");
         ride.setPrice(calculatePrice(rideDTO.getLocations()));
@@ -93,5 +92,25 @@ public class RideService {
 
     public Page<RideWithIdDTO> getAllRides(Pageable pageable) {
         return rideRepository.findAll(pageable).map(rideWithIdMapper::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RideWithIdDTO> getAllRides(Long userId, Pageable pageable) {
+        return rideRepository.findAllByUserId(userId, pageable)
+                .map(rideWithIdMapper::toDTO);
+    }
+
+    @Transactional
+    public RideWithIdDTO cancelRide (CanceledRideDTO canceledRideDTO)
+    {
+        Optional<Ride> rideOptional = rideRepository.findById(canceledRideDTO.getRideId());
+        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
+        Ride ride = rideOptional.get();
+        if (ride.getUserId().equals(canceledRideDTO.getUserId()))
+        {
+            ride.setStatus(String.valueOf(Status.CANCELED_BY_USER));
+        }
+        rideRepository.save(ride);
+        return rideWithIdMapper.toDTO(ride);
     }
 }
