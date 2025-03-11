@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RidePageResponse {
+public class RidePageResponseDTO {
     private List<RideWithIdDTO> content;
     private int totalPages;
     private long totalElements;

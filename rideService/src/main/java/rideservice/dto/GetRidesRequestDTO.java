@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetRidesRequestDTO {
-    @NotBlank(message = "User Id cannot be null")
+    @NotNull(message = "User id cannot be null")
     private Long userId;
     @NotNull(message = "Page cannot be null")
     private int page;

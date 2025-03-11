@@ -18,6 +18,7 @@ public class RideController {
     {
         this.rideService=rideService;
     }
+
     @PostMapping
     public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO)
     {
@@ -48,5 +49,13 @@ public class RideController {
                                          @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
         return new ResponseEntity<>(rideService.getAllRides(PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("user-rides/{userId}")
+    public ResponseEntity<?> getAllRidesByUserId(@PathVariable("userId") Long userId,
+                                                 @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                 @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(rideService.getAllRides(userId, PageRequest.of(page, size)),HttpStatus.OK);
     }
 }

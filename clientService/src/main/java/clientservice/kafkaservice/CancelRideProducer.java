@@ -1,13 +1,13 @@
 package clientservice.kafkaservice;
 
 import clientservice.dto.CanceledRideDTO;
-import clientservice.dto.GetRidesRequestDTO;
-import clientservice.dto.RidePageResponse;
 import clientservice.dto.RideWithIdDTO;
+import clientservice.exception.KafkaSendException;
+import jakarta.validation.Valid;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.requestreply.RequestReplyFuture;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.stereotype.Service;
@@ -16,23 +16,21 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class CancelRideProducer {
-    private final ReplyingKafkaTemplate<String, CanceledRideDTO, RideWithIdDTO> replyingKafkaTemplate;
+    private final KafkaTemplate<String, CanceledRideDTO> kafkaTemplate;
 
     @Value("${kafka.topic.rideCancelTopic}")
     private String rideCancelTopic;
 
-    @Value("${kafka.topic.cancelRideReplyTopic}")
-    private String cancelRideReplyTopic;
-
-    public CancelRideProducer(ReplyingKafkaTemplate<String, CanceledRideDTO, RideWithIdDTO> replyingKafkaTemplate) {
-        this.replyingKafkaTemplate = replyingKafkaTemplate;
+    public CancelRideProducer(KafkaTemplate<String, CanceledRideDTO> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
     }
 
-    public RideWithIdDTO sendCancelRequest(CanceledRideDTO request) throws Exception {
-        ProducerRecord<String, CanceledRideDTO> record = new ProducerRecord<>(rideCancelTopic, request);
-        record.headers().add(KafkaHeaders.REPLY_TOPIC, cancelRideReplyTopic.getBytes());
-        RequestReplyFuture<String, CanceledRideDTO, RideWithIdDTO> future = replyingKafkaTemplate.sendAndReceive(record);
-        ConsumerRecord<String, RideWithIdDTO> response = future.get(10, TimeUnit.SECONDS);
-        return response.value();
+    public void sendCancelRequest(@Valid CanceledRideDTO request) {
+        try {
+            kafkaTemplate.send(rideCancelTopic, request).get(10, TimeUnit.SECONDS);
+        }
+        catch (Exception ex) {
+            throw new KafkaSendException("Failed to send message to Kafka", ex);
+        }
     }
 }

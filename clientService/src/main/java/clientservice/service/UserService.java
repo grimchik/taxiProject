@@ -1,5 +1,6 @@
 package clientservice.service;
 
+import clientservice.client.RideServiceClient;
 import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
@@ -24,9 +25,13 @@ public class UserService {
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
     private final UserWithIdMapper userWithIdMapper = UserWithIdMapper.INSTANCE;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+
+    private final RideServiceClient rideServiceClient;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RideServiceClient rideServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rideServiceClient=rideServiceClient;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -139,4 +144,17 @@ public class UserService {
         return userWithIdMapper.toDTO(user);
     }
 
+    public RidePageResponseDTO getRidesByUserId(Long userId, Integer page, Integer size) {
+        return rideServiceClient.getRides(userId, page, size);
+    }
+
+    public RideWithIdDTO createRide(RideDTO rideDTO)
+    {
+        return rideServiceClient.createRide(rideDTO);
+    }
+
+    public RideWithIdDTO changeRide(Long rideId,UpdateRideDTO updateRideDTO)
+    {
+        return rideServiceClient.changeRide(rideId,updateRideDTO);
+    }
 }

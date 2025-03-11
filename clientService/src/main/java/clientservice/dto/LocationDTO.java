@@ -1,5 +1,6 @@
 package clientservice.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LocationDTO {
 
-    @NotNull(message = "Address cannot be null")
+    @NotBlank(message = "Address cannot be null")
     private String address;
 
     @Pattern(regexp = "^(?!.*[a-zA-Z])[+-]?((1[0-7][0-9])|([1-9]?[0-9]))\\.[0-9]{1,6}$",

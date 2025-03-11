@@ -20,6 +20,21 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+        <version>3.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+        <version>4.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-okhttp</artifactId>
+        <version>11.4</version>
+      </dependency>
+      <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
         <version>3.2.2</version>
@@ -59,17 +74,17 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-gateway</artifactId>
-        <version>4.2.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-        <version>4.2.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-        <version>4.2.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -102,16 +117,6 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-mapstruct-binding</artifactId>
         <version>0.2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.kafka</groupId>
-        <artifactId>spring-kafka</artifactId>
-        <version>3.2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-openfeign</artifactId>
-        <version>4.2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

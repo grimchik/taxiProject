@@ -2,8 +2,6 @@ package clientservice.controller;
 
 import clientservice.dto.*;
 import clientservice.kafkaservice.CancelRideProducer;
-import clientservice.kafkaservice.GetRideProducer;
-import clientservice.kafkaservice.RideRequestProducer;
 import clientservice.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
@@ -11,21 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
-
-    private final RideRequestProducer rideRequestProducer;
-    private final GetRideProducer getRideProducer;
     private final CancelRideProducer cancelRideProducer;
 
-    public UserController(UserService userService, RideRequestProducer rideRequestProducer, GetRideProducer getRideProducer, CancelRideProducer cancelRideProducer) {
-        this.getRideProducer = getRideProducer;
-        this.rideRequestProducer = rideRequestProducer;
+    public UserController(UserService userService, CancelRideProducer cancelRideProducer) {
         this.userService = userService;
         this.cancelRideProducer=cancelRideProducer;
     }
@@ -63,24 +54,32 @@ public class UserController {
     }
 
     @PostMapping("/create-ride")
-    public ResponseEntity<?> createRide(@RequestBody CreateRideRequestDTO createRideRequest) throws Exception {
-        return new ResponseEntity<>(rideRequestProducer.sendRideRequest(createRideRequest), HttpStatus.CREATED);
+    public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO)
+    {
+        return new ResponseEntity<>(userService.createRide(rideDTO), HttpStatus.CREATED);
     }
 
-    @GetMapping("/all-rides/{id}")
-    public ResponseEntity<?> getRides(
-            @PathVariable("id") Long id,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "5") Integer size) throws Exception {
-        GetRidesRequestDTO getRidesRequestDTO = new GetRidesRequestDTO(id, page, size);
-        return new ResponseEntity<>(getRideProducer.sendRideRequest(getRidesRequestDTO), HttpStatus.OK);
+    @GetMapping("/user-rides/{userId}")
+    public ResponseEntity<?> getUserRides(@PathVariable("userId") Long userId,
+                                          @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                          @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(userService.getRidesByUserId(userId, page, size),HttpStatus.OK);
     }
 
-    @PostMapping("/cancel-ride/{id}")
-    public ResponseEntity<?> cancelRide(
-            @PathVariable("id") Long rideId,
-            @RequestParam(value = "userId") Long userId) throws Exception {
-        CanceledRideDTO canceledRideDTO= new CanceledRideDTO(userId,rideId);
-        return new ResponseEntity<>(cancelRideProducer.sendCancelRequest(canceledRideDTO),HttpStatus.OK);
+    @PatchMapping("/update-ride/{id}")
+    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId, @RequestBody UpdateRideDTO updateRideDTO)
+    {
+        return new ResponseEntity<>(userService.changeRide(rideId,updateRideDTO),HttpStatus.OK);
+    }
+
+    @PostMapping("/cancel-ride/{rideId}")
+    public ResponseEntity<Void> cancelRide(
+            @PathVariable("rideId") Long rideId,
+            @RequestParam("userId") Long userId)
+    {
+        CanceledRideDTO canceledRideDTO = new CanceledRideDTO(userId, rideId);
+        cancelRideProducer.sendCancelRequest(canceledRideDTO);
+        return ResponseEntity.accepted().build();
     }
 }
