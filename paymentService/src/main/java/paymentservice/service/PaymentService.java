@@ -43,7 +43,7 @@ public class PaymentService {
     public PaymentDTO getPayment(Long id)
     {
         Optional<Payment> paymentOptional = paymentRepository.findById(id);
-        paymentOptional.orElseThrow(() -> new EntityExistsException("Payment not found"));
+        paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         return paymentMapper.toDTO(paymentOptional.get());
     }
 
@@ -51,7 +51,7 @@ public class PaymentService {
     public void deletePayment (Long id)
     {
         Optional<Payment> paymentOptional = paymentRepository.findById(id);
-        paymentOptional.orElseThrow(() -> new EntityExistsException("Payment not found"));
+        paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         paymentRepository.delete(paymentOptional.get());
     }
 
@@ -59,7 +59,7 @@ public class PaymentService {
     public PaymentWithIdDTO updatePayment(Long id,PaymentDTO paymentDTO)
     {
         Optional<Payment> paymentOptional = paymentRepository.findById(id);
-        paymentOptional.orElseThrow(() -> new EntityExistsException("Payment not found"));
+        paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         Payment payment = paymentOptional.get();
         payment.setPaymentType(paymentDTO.getPaymentType());
         payment.setCardNumber(paymentDTO.getCardNumber());
@@ -73,7 +73,7 @@ public class PaymentService {
     public PaymentWithIdDTO changePayment(Long id, UpdatePaymentDTO updatePaymentDTO)
     {
         Optional<Payment> paymentOptional = paymentRepository.findById(id);
-        paymentOptional.orElseThrow(() -> new EntityExistsException("Payment not found"));
+        paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         Payment payment = paymentOptional.get();
         if(updatePaymentDTO.getPaymentType() != null)
         {

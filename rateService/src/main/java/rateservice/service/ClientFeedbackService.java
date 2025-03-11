@@ -43,14 +43,14 @@ public class ClientFeedbackService {
 
     public ClientFeedbackWithIdDTO getFeedback(Long id) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+        clientFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from client not found"));
         return clientFeedbackWithIdMapper.toDTO(clientFeedbackOptional.get());
     }
 
     @Transactional
     public ClientFeedbackWithIdDTO changeClientFeedback(Long id, UpdateClientRateDTO updateClientRateDTO) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+        clientFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from client not found"));
 
         ClientFeedback clientFeedback = clientFeedbackOptional.get();
 
@@ -81,14 +81,14 @@ public class ClientFeedbackService {
     @Transactional
     public void deleteFeedback(Long id) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+        clientFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from client not found"));
         clientFeedbackRepository.delete(clientFeedbackOptional.get());
     }
 
     @Transactional
     public ClientFeedbackWithIdDTO updateFeedback(Long id, ClientFeedbackDTO clientFeedbackDTO) {
         Optional<ClientFeedback> clientFeedbackOptional = clientFeedbackRepository.findById(id);
-        clientFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from client not found"));
+        clientFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from client not found"));
 
         ClientFeedback clientFeedback = clientFeedbackOptional.get();
 

@@ -70,11 +70,82 @@ public class UserController {
     }
 
     @PostMapping("/cancel-ride/{rideId}")
-    public ResponseEntity<Void> cancelRide(
+    public ResponseEntity<?> cancelRide(
             @PathVariable("rideId") Long rideId,
             @RequestParam("userId") Long userId) {
         CanceledRideDTO canceledRideDTO = new CanceledRideDTO(userId, rideId);
         userService.cancelRide(canceledRideDTO);
         return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/apply-promocode")
+    public ResponseEntity<?> applyPromocode (@Valid @RequestBody CheckPromoCodeDTO checkPromoCodeDTO)
+    {
+        userService.checkPromoCode(checkPromoCodeDTO);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //ADMIN METHODS
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    //____________________________________________________
+    //CAR METHODS
+    //____________________________________________________
+    @GetMapping("/all-cars")
+    public ResponseEntity<?> getAllCars(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                        @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(userService.getAllCars(PageRequest.of(page, size)), HttpStatus.OK);
+    }
+
+    @PostMapping("/create-car")
+    public ResponseEntity<?> createCar (CarCreateDTO carCreateDTO)
+    {
+        return new ResponseEntity<>(userService.createCar(carCreateDTO), HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/change-car/{carId}")
+    public ResponseEntity<?> changeCar (@PathVariable("carId") Long carId, @RequestBody UpdateCarDTO updateCarDTO)
+    {
+        return new ResponseEntity<>(userService.changeCar(carId,updateCarDTO),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete-car/{carId}")
+    public ResponseEntity<?> deleteCar (@PathVariable("carId") Long carId)
+    {
+        userService.deleteCar(carId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    //____________________________________________________
+    //PROMO CODES METHODS
+    //____________________________________________________
+
+    @GetMapping("/all-promocodes")
+    public ResponseEntity<?> getAllPromoCodes(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                              @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(userService.getAllPromoCodes(PageRequest.of(page, size)), HttpStatus.OK);
+    }
+
+    @PostMapping("/create-promocode")
+    public ResponseEntity<?> createPromoCode (PromoCodeDTO promoCodeDTO)
+    {
+        return new ResponseEntity<>(userService.createPromoCode(promoCodeDTO), HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/change-promocode/{promoCodeId}")
+    public ResponseEntity<?> changePromoCode (@PathVariable("promoCodeId") Long promoCodeId,
+                                              @RequestBody UpdatePromoCodeDTO updatePromoCodeDTO)
+    {
+        return new ResponseEntity<>(userService.changePromoCode(promoCodeId,updatePromoCodeDTO),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete-promocode/{promoCodeId}")
+    public ResponseEntity<?> deletePromoCode (@PathVariable("promoCodeId") Long promoCodeId)
+    {
+        userService.deletePromoCode(promoCodeId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

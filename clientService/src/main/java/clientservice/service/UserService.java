@@ -1,10 +1,13 @@
 package clientservice.service;
 
+import clientservice.client.CarServiceClient;
+import clientservice.client.PromoCodeServiceClient;
 import clientservice.client.RideServiceClient;
 import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
 import clientservice.kafkaservice.CancelRideProducer;
+import clientservice.kafkaservice.CheckPromoCodeProducer;
 import clientservice.mapper.UserMapper;
 import clientservice.mapper.UserWithIdMapper;
 import clientservice.mapper.UserWithoutPasswordMapper;
@@ -22,19 +25,31 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+
     private final PasswordEncoder passwordEncoder;
+
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
     private final UserWithIdMapper userWithIdMapper = UserWithIdMapper.INSTANCE;
+
     private final CancelRideProducer cancelRideProducer;
+    private final CheckPromoCodeProducer checkPromoCodeProducer;
 
     private final RideServiceClient rideServiceClient;
+    private final CarServiceClient carServiceClient;
+    private final PromoCodeServiceClient promoCodeServiceClient;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer,
+                       CarServiceClient carServiceClient,PromoCodeServiceClient promoCodeServiceClient,
+                       CheckPromoCodeProducer checkPromoCodeProducer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient=rideServiceClient;
         this.cancelRideProducer=cancelRideProducer;
+        this.carServiceClient=carServiceClient;
+        this.promoCodeServiceClient=promoCodeServiceClient;
+        this.checkPromoCodeProducer=checkPromoCodeProducer;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -147,7 +162,7 @@ public class UserService {
         return userWithIdMapper.toDTO(user);
     }
 
-    public RidePageResponseDTO getRidesByUserId(Long userId, Integer page, Integer size) {
+    public Page<RideWithIdDTO> getRidesByUserId(Long userId, Integer page, Integer size) {
         return rideServiceClient.getRides(userId, page, size);
     }
 
@@ -161,8 +176,53 @@ public class UserService {
         return rideServiceClient.changeRide(rideId,updateRideDTO);
     }
 
+    public CarWithIdDTO createCar (CarCreateDTO carCreateDTO)
+    {
+        return carServiceClient.createCar(carCreateDTO);
+    }
+
+    public CarWithIdDTO changeCar (Long carId,UpdateCarDTO updateCarDTO)
+    {
+        return carServiceClient.changeCar(carId, updateCarDTO);
+    }
+
+    public void deleteCar(Long carId)
+    {
+        carServiceClient.deleteCar(carId);
+    }
+
+    public Page<CarWithIdDTO> getAllCars (Pageable pageable)
+    {
+        return carServiceClient.getAllCars(pageable);
+    }
+
+    public PromoCodeWithIdDTO createPromoCode (PromoCodeDTO promoCodeDTO)
+    {
+        return promoCodeServiceClient.createPromoCode(promoCodeDTO);
+    }
+
+    public PromoCodeWithIdDTO changePromoCode (Long promoCodeId,UpdatePromoCodeDTO updatePromoCodeDTO)
+    {
+        return promoCodeServiceClient.changePromoCode(promoCodeId, updatePromoCodeDTO);
+    }
+
+    public void deletePromoCode(Long promoCodeId)
+    {
+        promoCodeServiceClient.deletePromoCode(promoCodeId);
+    }
+
+    public Page<PromoCodeWithIdDTO> getAllPromoCodes (Pageable pageable)
+    {
+        return promoCodeServiceClient.getAllPromoCodes(pageable);
+    }
+
     public void cancelRide(CanceledRideDTO canceledRideDTO)
     {
         cancelRideProducer.sendCancelRequest(canceledRideDTO);
+    }
+
+    public void checkPromoCode(CheckPromoCodeDTO checkPromoCodeDTO)
+    {
+        checkPromoCodeProducer.sendCheckPromoCodeRequest(checkPromoCodeDTO);
     }
 }

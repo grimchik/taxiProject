@@ -43,14 +43,14 @@ public class DriverFeedbackService {
     public DriverFeedbackWithIdDTO getFeedback(Long id)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+        driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
         return driverFeedbackWithIdMapper.toDTO(driverFeedbackOptional.get());
     }
 
     @Transactional
     public DriverFeedbackWithIdDTO changeDriverFeedback(Long id, UpdateDriverRateDTO updateDriverRateDTO) {
         Optional<DriverFeedback> driverFeedbackOptional =driverFeedbackRepository.findById(id);
-        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+        driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
 
         DriverFeedback driverFeedback = driverFeedbackOptional.get();
 
@@ -82,7 +82,7 @@ public class DriverFeedbackService {
     public void deleteFeedback(Long id)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+        driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
         driverFeedbackRepository.delete(driverFeedbackOptional.get());
     }
 
@@ -90,7 +90,7 @@ public class DriverFeedbackService {
     public DriverFeedbackWithIdDTO updateFeedback(Long id, DriverFeedbackDTO driverFeedbackDTO)
     {
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
-        driverFeedbackOptional.orElseThrow(() -> new EntityExistsException("Feedback from driver not found"));
+        driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
 
         DriverFeedback driverFeedback = driverFeedbackOptional.get();
         driverFeedback.setRate(driverFeedbackDTO.getRate());

@@ -30,4 +30,6 @@ public class ClientFeedback {
 
     @Column(nullable = false)
     private Boolean niceMusic;
+
+    
 }

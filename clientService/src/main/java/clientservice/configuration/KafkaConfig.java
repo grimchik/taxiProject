@@ -1,6 +1,7 @@
 package clientservice.configuration;
 
 import clientservice.dto.CanceledRideDTO;
+import clientservice.dto.CheckPromoCodeDTO;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,21 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, CanceledRideDTO> kafkaTemplate(ProducerFactory<String, CanceledRideDTO> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+    public KafkaTemplate<String, CanceledRideDTO> kafkaTemplate(ProducerFactory<String, CanceledRideDTO> cancelProducerFactory) {
+        return new KafkaTemplate<>(cancelProducerFactory);
+    }
+
+    @Bean
+    public ProducerFactory<String, CheckPromoCodeDTO> checkPromoCodeProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CheckPromoCodeDTO> checkPromoCodeKafkaTemplate(ProducerFactory<String, CheckPromoCodeDTO>  checkPromoCodeProducerFactory) {
+        return new KafkaTemplate<>(checkPromoCodeProducerFactory);
     }
 }

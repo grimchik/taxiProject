@@ -27,4 +27,6 @@ public class Ride {
     private LocalDateTime createdAt;
     @Column(name = "user_id")
     private Long userId;
+    @Column(name = "promo_code_applied", nullable = false)
+    private Boolean promoCodeApplied = false;
 }

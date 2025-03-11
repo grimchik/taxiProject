@@ -12,12 +12,14 @@ import rideservice.dto.*;
 import rideservice.entity.Location;
 import rideservice.entity.Ride;
 import rideservice.enums.Status;
+import rideservice.exception.ActiveRideException;
 import rideservice.mapper.LocationMapper;
 import rideservice.mapper.RideWithIdMapper;
 import rideservice.repository.RideRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,19 @@ public class RideService {
     @Transactional
     public RideWithIdDTO createRide(RideDTO rideDTO)
     {
+        List<String> activeStatuses = Arrays.asList(
+                Status.REQUESTED.name(),
+                Status.WAITING_DRIVER.name(),
+                Status.DRIVER_ON_THE_WAY.name(),
+                Status.IN_PROGRESS.name()
+        );
+
+        Optional<Ride> existingRide = rideRepository.findByUserIdAndStatusIn(rideDTO.getUserId(), activeStatuses);
+
+        if (existingRide.isPresent()) {
+            throw new ActiveRideException("User already has an active ride with status: " + existingRide.get().getStatus());
+        }
+
         Ride ride = new Ride();
         ride.setUserId(rideDTO.getUserId());
         ride.setCreatedAt(LocalDateTime.now());
@@ -50,7 +65,6 @@ public class RideService {
         }
         ride.setLocations(locations);
         rideRepository.save(ride);
-
         return rideWithIdMapper.toDTO(ride);
     }
 
@@ -115,5 +129,26 @@ public class RideService {
         rideRepository.save(ride);
 
         return rideWithIdMapper.toDTO(ride);
+    }
+
+    @Transactional
+    public void applyPromoCode (ApplyPromocodeDTO applyPromocodeDTO)
+    {
+        Optional<Ride> activeRide = rideRepository.findByUserIdAndStatusIn(
+                applyPromocodeDTO.getUserId(),
+                Arrays.asList(Status.REQUESTED.name(), Status.WAITING_DRIVER.name(), Status.DRIVER_ON_THE_WAY.name(), Status.IN_PROGRESS.name())
+        );
+
+        Ride ride = activeRide.orElseThrow(() ->
+                new EntityNotFoundException("No active ride found for user with id: " + applyPromocodeDTO.getUserId())
+        );
+
+        if (ride.getPromoCodeApplied()) {
+            throw new IllegalStateException("Promo code has already been applied to this ride.");
+        }
+
+        ride.setPrice(ride.getPrice()*(1.0 - applyPromocodeDTO.getPercent()/100.0));
+        ride.setPromoCodeApplied(true);
+        rideRepository.save(ride);
     }
 }

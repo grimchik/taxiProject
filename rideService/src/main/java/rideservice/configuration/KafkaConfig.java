@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import rideservice.dto.ApplyPromocodeDTO;
 import rideservice.dto.CanceledRideDTO;
 
 import java.util.HashMap;
@@ -21,6 +22,8 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.groupId}")
     private String groupId;
+    @Value("${spring.kafka.applyGroupId}")
+    private String applyGroupId;
 
     @Bean
     public ConsumerFactory<String, CanceledRideDTO> consumerFactory() {
@@ -38,6 +41,25 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, CanceledRideDTO> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, CanceledRideDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, ApplyPromocodeDTO> applyPromocodeConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, applyGroupId);
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(), new JsonDeserializer<>(ApplyPromocodeDTO.class,false));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ApplyPromocodeDTO> kafkaApplyPromoCodeListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ApplyPromocodeDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(applyPromocodeConsumerFactory());
         return factory;
     }
 }
