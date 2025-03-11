@@ -14,11 +14,10 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
-    private final CancelRideProducer cancelRideProducer;
 
-    public UserController(UserService userService, CancelRideProducer cancelRideProducer) {
+
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.cancelRideProducer=cancelRideProducer;
     }
 
     @PostMapping
@@ -54,32 +53,28 @@ public class UserController {
     }
 
     @PostMapping("/create-ride")
-    public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO)
-    {
+    public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO) {
         return new ResponseEntity<>(userService.createRide(rideDTO), HttpStatus.CREATED);
     }
 
     @GetMapping("/user-rides/{userId}")
     public ResponseEntity<?> getUserRides(@PathVariable("userId") Long userId,
                                           @RequestParam(value = "page", defaultValue = "0") Integer page,
-                                          @RequestParam(value = "size", defaultValue = "5") Integer size)
-    {
-        return new ResponseEntity<>(userService.getRidesByUserId(userId, page, size),HttpStatus.OK);
+                                          @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        return new ResponseEntity<>(userService.getRidesByUserId(userId, page, size), HttpStatus.OK);
     }
 
     @PatchMapping("/update-ride/{id}")
-    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId, @RequestBody UpdateRideDTO updateRideDTO)
-    {
-        return new ResponseEntity<>(userService.changeRide(rideId,updateRideDTO),HttpStatus.OK);
+    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId, @RequestBody UpdateRideDTO updateRideDTO) {
+        return new ResponseEntity<>(userService.changeRide(rideId, updateRideDTO), HttpStatus.OK);
     }
 
     @PostMapping("/cancel-ride/{rideId}")
     public ResponseEntity<Void> cancelRide(
             @PathVariable("rideId") Long rideId,
-            @RequestParam("userId") Long userId)
-    {
+            @RequestParam("userId") Long userId) {
         CanceledRideDTO canceledRideDTO = new CanceledRideDTO(userId, rideId);
-        cancelRideProducer.sendCancelRequest(canceledRideDTO);
+        userService.cancelRide(canceledRideDTO);
         return ResponseEntity.accepted().build();
     }
 }

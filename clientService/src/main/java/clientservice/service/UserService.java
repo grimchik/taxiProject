@@ -4,6 +4,7 @@ import clientservice.client.RideServiceClient;
 import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
+import clientservice.kafkaservice.CancelRideProducer;
 import clientservice.mapper.UserMapper;
 import clientservice.mapper.UserWithIdMapper;
 import clientservice.mapper.UserWithoutPasswordMapper;
@@ -25,13 +26,15 @@ public class UserService {
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
     private final UserWithIdMapper userWithIdMapper = UserWithIdMapper.INSTANCE;
+    private final CancelRideProducer cancelRideProducer;
 
     private final RideServiceClient rideServiceClient;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RideServiceClient rideServiceClient) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient=rideServiceClient;
+        this.cancelRideProducer=cancelRideProducer;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -156,5 +159,10 @@ public class UserService {
     public RideWithIdDTO changeRide(Long rideId,UpdateRideDTO updateRideDTO)
     {
         return rideServiceClient.changeRide(rideId,updateRideDTO);
+    }
+
+    public void cancelRide(CanceledRideDTO canceledRideDTO)
+    {
+        cancelRideProducer.sendCancelRequest(canceledRideDTO);
     }
 }
