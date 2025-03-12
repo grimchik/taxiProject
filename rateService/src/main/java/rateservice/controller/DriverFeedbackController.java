@@ -4,10 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import rateservice.dto.DriverFeedbackDTO;
-import rateservice.dto.RateDTO;
 import rateservice.dto.UpdateDriverRateDTO;
 import rateservice.service.DriverFeedbackService;
 

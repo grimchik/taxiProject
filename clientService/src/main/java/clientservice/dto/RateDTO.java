@@ -1,4 +1,4 @@
-package rateservice.dto;
+package clientservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

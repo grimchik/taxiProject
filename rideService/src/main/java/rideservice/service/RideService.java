@@ -2,7 +2,6 @@ package rideservice.service;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import liquibase.command.core.UpdateCountSqlCommandStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -116,7 +115,7 @@ public class RideService {
     }
 
     @Transactional
-    public RideWithIdDTO cancelRide (CanceledRideDTO canceledRideDTO)
+    public void cancelRide (CanceledRideDTO canceledRideDTO)
     {
         Ride ride = rideRepository.findById(canceledRideDTO.getRideId())
                 .orElseThrow(() -> new EntityNotFoundException("Ride not found with id: " + canceledRideDTO.getRideId()));
@@ -125,10 +124,20 @@ public class RideService {
             throw new IllegalStateException("User is not authorized to cancel this ride");
         }
 
+        if (!isCancelable(ride.getStatus())) {
+            throw new IllegalStateException("This ride cannot be canceled because it has already started or is in progress");
+        }
+
         ride.setStatus(Status.CANCELED_BY_USER.name());
         rideRepository.save(ride);
 
-        return rideWithIdMapper.toDTO(ride);
+        rideWithIdMapper.toDTO(ride);
+    }
+
+    private boolean isCancelable(String status) {
+        return status.equals(Status.REQUESTED.name()) ||
+                status.equals(Status.WAITING_DRIVER.name()) ||
+                status.equals(Status.DRIVER_ON_THE_WAY.name());
     }
 
     @Transactional

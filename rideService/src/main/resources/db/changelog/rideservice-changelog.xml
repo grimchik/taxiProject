@@ -60,5 +60,13 @@
         </addColumn>
     </changeSet>
 
-
+    <changeSet id="6" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="user_id"
+                constraintName="fk_rides_users"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
 </databaseChangeLog>

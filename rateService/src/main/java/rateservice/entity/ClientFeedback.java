@@ -31,5 +31,9 @@ public class ClientFeedback {
     @Column(nullable = false)
     private Boolean niceMusic;
 
-    
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(name = "ride_id", nullable = false)
+    private Long rideId;
 }

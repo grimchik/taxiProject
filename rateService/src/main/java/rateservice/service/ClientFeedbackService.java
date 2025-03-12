@@ -1,13 +1,10 @@
 package rateservice.service;
 
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rateservice.dto.ClientFeedbackDTO;
-import rateservice.dto.ClientFeedbackWithIdDTO;
-import rateservice.dto.RateDTO;
-import rateservice.dto.UpdateClientRateDTO;
+import rateservice.client.RideServiceClient;
+import rateservice.dto.*;
 import rateservice.entity.ClientFeedback;
 import rateservice.mapper.ClientFeedbackMapper;
 import rateservice.mapper.ClientFeedbackWithIdMapper;
@@ -15,27 +12,40 @@ import rateservice.repository.ClientFeedbackRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ClientFeedbackService {
     private final ClientFeedbackRepository clientFeedbackRepository;
-    private final ClientFeedbackMapper clientFeedbackMapper = ClientFeedbackMapper.INSTANCE;
     private final ClientFeedbackWithIdMapper clientFeedbackWithIdMapper = ClientFeedbackWithIdMapper.INSTANCE;
 
-    public ClientFeedbackService(ClientFeedbackRepository clientFeedbackRepository) {
+    private final RideServiceClient rideServiceClient;
+    public ClientFeedbackService(ClientFeedbackRepository clientFeedbackRepository,RideServiceClient rideServiceClient) {
         this.clientFeedbackRepository = clientFeedbackRepository;
+        this.rideServiceClient=rideServiceClient;
     }
 
     @Transactional
     public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO) {
         ClientFeedback clientFeedback = new ClientFeedback();
+        RideWithIdDTO ride = getRide(clientFeedbackDTO.getRideId());
 
+        if (ride == null || !ride.getStatus().equalsIgnoreCase("COMPLETED"))
+        {
+            throw new IllegalStateException("Can't create feedback. Ride is not completed.");
+        }
+
+        if (!ride.getUserId().equals(clientFeedbackDTO.getUserId())) {
+            throw new IllegalStateException("User is not authorized to provide feedback for this ride.");
+        }
         clientFeedback.setRate(clientFeedbackDTO.getRate());
         clientFeedback.setComment(clientFeedbackDTO.getComment());
         clientFeedback.setCleanInterior(clientFeedbackDTO.getCleanInterior());
         clientFeedback.setSafeDriving(clientFeedbackDTO.getSafeDriving());
         clientFeedback.setNiceMusic(clientFeedbackDTO.getNiceMusic());
+        clientFeedback.setRideId(clientFeedbackDTO.getRideId());
+        clientFeedback.setUserId(clientFeedbackDTO.getUserId());
 
         clientFeedbackRepository.save(clientFeedback);
         return clientFeedbackWithIdMapper.toDTO(clientFeedback);
@@ -104,5 +114,41 @@ public class ClientFeedbackService {
 
     public Page<ClientFeedbackWithIdDTO> getAllClientFeedbacks(Pageable pageable) {
         return clientFeedbackRepository.findAll(pageable).map(clientFeedbackWithIdMapper::toDTO);
+    }
+
+    public Page<ClientFeedbackWithIdDTO> getAllClientFeedbacksById (Long userId,Pageable pageable) {
+        return clientFeedbackRepository.findAllByUserId(userId,pageable).map(clientFeedbackWithIdMapper::toDTO);
+    }
+
+    public RateDTO calculateAverageRating(Long userId) {
+        List<ClientFeedback> feedbacks = clientFeedbackRepository.findByUserId(userId);
+
+        if (feedbacks.isEmpty()) {
+            return new RateDTO(0.0);
+        }
+
+        double totalRate = 0;
+        double totalAttributes = 0;
+        int count = 0;
+
+        for (ClientFeedback feedback : feedbacks) {
+            totalRate += feedback.getRate();
+            totalAttributes += getValidAttributeValue(feedback.getCleanInterior());
+            totalAttributes += getValidAttributeValue(feedback.getSafeDriving());
+            totalAttributes += getValidAttributeValue(feedback.getNiceMusic());
+            count++;
+        }
+        double averageRate = totalRate / count;
+        double averageAttributes = totalAttributes / (count * 3);
+        return new RateDTO((averageRate + averageAttributes) / 2);
+    }
+
+    private double getValidAttributeValue(Boolean attribute) {
+        return (attribute != null && attribute) ? 1.0 : 0.0;
+    }
+
+    private RideWithIdDTO getRide(Long rideId)
+    {
+        return rideServiceClient.getRide(rideId);
     }
 }

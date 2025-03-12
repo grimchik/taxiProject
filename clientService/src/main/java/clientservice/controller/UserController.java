@@ -85,6 +85,26 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
+    @PostMapping("/create-feedback")
+    public ResponseEntity<?> createFeedback (@RequestBody ClientFeedbackDTO clientFeedbackDTO)
+    {
+        return new ResponseEntity<>(userService.createFeedback(clientFeedbackDTO),HttpStatus.CREATED);
+    }
+
+    @GetMapping("/user-feedbacks/{userId}")
+    public ResponseEntity<?> getUserFeedbacks(@PathVariable("userId") Long userId,
+                                              @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                              @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(userService.getAllFeedbacks(userId,page,size),HttpStatus.OK);
+    }
+
+    @GetMapping("/user-rate/{userId}")
+    public ResponseEntity<?> getUserFeedbacks(@PathVariable("userId") Long userId)
+    {
+        return new ResponseEntity<>(userService.getUserRate(userId),HttpStatus.OK);
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //ADMIN METHODS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

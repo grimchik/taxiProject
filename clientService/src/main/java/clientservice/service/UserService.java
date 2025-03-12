@@ -1,6 +1,7 @@
 package clientservice.service;
 
 import clientservice.client.CarServiceClient;
+import clientservice.client.FeedbackServiceClient;
 import clientservice.client.PromoCodeServiceClient;
 import clientservice.client.RideServiceClient;
 import clientservice.dto.*;
@@ -38,11 +39,12 @@ public class UserService {
     private final RideServiceClient rideServiceClient;
     private final CarServiceClient carServiceClient;
     private final PromoCodeServiceClient promoCodeServiceClient;
+    private final FeedbackServiceClient feedbackServiceClient;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer,
                        CarServiceClient carServiceClient,PromoCodeServiceClient promoCodeServiceClient,
-                       CheckPromoCodeProducer checkPromoCodeProducer) {
+                       CheckPromoCodeProducer checkPromoCodeProducer,FeedbackServiceClient feedbackServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient=rideServiceClient;
@@ -50,6 +52,7 @@ public class UserService {
         this.carServiceClient=carServiceClient;
         this.promoCodeServiceClient=promoCodeServiceClient;
         this.checkPromoCodeProducer=checkPromoCodeProducer;
+        this.feedbackServiceClient=feedbackServiceClient;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -224,5 +227,20 @@ public class UserService {
     public void checkPromoCode(CheckPromoCodeDTO checkPromoCodeDTO)
     {
         checkPromoCodeProducer.sendCheckPromoCodeRequest(checkPromoCodeDTO);
+    }
+
+    public Page<ClientFeedbackWithIdDTO> getAllFeedbacks (Long userId, Integer page, Integer size)
+    {
+        return feedbackServiceClient.getFeedbacks(userId,page,size);
+    }
+
+    public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO)
+    {
+        return feedbackServiceClient.createClientFeedback(clientFeedbackDTO);
+    }
+
+    public RateDTO getUserRate(Long userId)
+    {
+        return feedbackServiceClient.getUserRate(userId);
     }
 }

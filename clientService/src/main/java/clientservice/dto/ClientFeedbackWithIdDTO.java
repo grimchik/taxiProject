@@ -1,4 +1,4 @@
-package rateservice.dto;
+package clientservice.dto;
 
 import lombok.Getter;
 import lombok.Setter;
