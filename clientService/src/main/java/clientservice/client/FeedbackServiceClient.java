@@ -21,4 +21,8 @@ public interface FeedbackServiceClient {
     @GetMapping("/user-rate/{userId}")
     RateDTO getUserRate(@PathVariable("userId") Long userId);
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    ClientFeedbackWithIdDTO changeFeedBack(@PathVariable("id") Long promoCodeId,
+                                           @RequestBody UpdateClientRateDTO updateClientRateDTO
+    );
 }

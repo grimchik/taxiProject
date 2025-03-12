@@ -11,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class RideWithIdDTO {
     private Long userId;
+    private Long driverId;
     private Long id;
     private List<LocationDTO> locations;
     private String status;

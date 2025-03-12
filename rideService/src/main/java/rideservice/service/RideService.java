@@ -109,9 +109,41 @@ public class RideService {
         return rideRepository.findAll(pageable).map(rideWithIdMapper::toDTO);
     }
 
-    public Page<RideWithIdDTO> getAllRides(Long userId, Pageable pageable) {
+    public Page<RideWithIdDTO> getAllRidesByUserId(Long userId, Pageable pageable) {
         return rideRepository.findAllByUserId(userId, pageable)
                 .map(rideWithIdMapper::toDTO);
+    }
+
+    public Page<RideWithIdDTO> getAllRidesByDriverId(Long driverId, Pageable pageable) {
+        return rideRepository.findAllByDriverId(driverId, pageable)
+                .map(rideWithIdMapper::toDTO);
+    }
+
+    public Page<RideWithIdDTO> getAllAvailableRides(Pageable pageable) {
+        return rideRepository.findByStatus(Status.REQUESTED.name(),pageable)
+                .map(rideWithIdMapper::toDTO);
+    }
+
+    public Page<RideWithIdDTO> getCompletedRides(Long driverId,Pageable pageable) {
+        return rideRepository.findByStatusAndDriverId(Status.COMPLETED.name(),driverId,pageable)
+                .map(rideWithIdMapper::toDTO);
+    }
+
+    public RideWithIdDTO getActiveRide(Long driverId) {
+        List<String> activeStatuses = Arrays.asList(
+                Status.REQUESTED.name(),
+                Status.WAITING_DRIVER.name(),
+                Status.DRIVER_ON_THE_WAY.name(),
+                Status.IN_PROGRESS.name()
+        );
+
+        Optional<Ride> existingRide = rideRepository.findByDriverIdAndStatusIn(driverId, activeStatuses);
+
+        if (existingRide.isPresent()) {
+            return rideWithIdMapper.toDTO(existingRide.get());
+        } else {
+            return new RideWithIdDTO();
+        }
     }
 
     @Transactional
@@ -160,4 +192,5 @@ public class RideService {
         ride.setPromoCodeApplied(true);
         rideRepository.save(ride);
     }
+
 }

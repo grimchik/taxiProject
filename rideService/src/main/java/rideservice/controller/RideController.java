@@ -51,11 +51,41 @@ public class RideController {
         return new ResponseEntity<>(rideService.getAllRides(PageRequest.of(page, size)),HttpStatus.OK);
     }
 
-    @GetMapping("user-rides/{userId}")
+    @GetMapping("/user-rides/{userId}")
     public ResponseEntity<?> getAllRidesByUserId(@PathVariable("userId") Long userId,
                                                  @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                  @RequestParam(value = "size", defaultValue = "5") Integer size)
     {
-        return new ResponseEntity<>(rideService.getAllRides(userId, PageRequest.of(page, size)),HttpStatus.OK);
+        return new ResponseEntity<>(rideService.getAllRidesByUserId(userId, PageRequest.of(page, size)),HttpStatus.OK);
     }
+
+    @GetMapping("/driver-rides/{driverId}")
+    public ResponseEntity<?> getAllRidesByDriverId(@PathVariable("driverId") Long driverId,
+                                                 @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                 @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(rideService.getAllRidesByDriverId(driverId, PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/available-rides")
+    public ResponseEntity<?> getAllAvailableRides(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                  @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(rideService.getAllAvailableRides(PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/completed-rides/{driverId}")
+    public ResponseEntity<?> getCompletedRides(@PathVariable("driverId") Long driverId,
+                                               @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                               @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(rideService.getCompletedRides(driverId,PageRequest.of(page,size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/active-ride/{driverId}")
+    public ResponseEntity<?> getActiveRide(@PathVariable("driverId") Long driverId)
+    {
+        return new ResponseEntity<>(rideService.getActiveRide(driverId),HttpStatus.OK);
+    }
+
 }

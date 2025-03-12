@@ -243,4 +243,9 @@ public class UserService {
     {
         return feedbackServiceClient.getUserRate(userId);
     }
+
+    public ClientFeedbackWithIdDTO changeFeedback (Long feedbackId,UpdateClientRateDTO updateClientRateDTO)
+    {
+        return feedbackServiceClient.changeFeedBack(feedbackId, updateClientRateDTO);
+    }
 }

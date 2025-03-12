@@ -56,4 +56,17 @@ public class DriverFeedbackController {
     {
         return new ResponseEntity<>(driverFeedbackService.getAllDriverFeedbacks(PageRequest.of(page, size)),HttpStatus.OK);
     }
+    @GetMapping("/driver-feedbacks/{driverId}")
+    public ResponseEntity<?> getAllDriverFeedbacksByUserId(@PathVariable("driverId") Long driverId,
+                                                           @RequestParam(value = "page",defaultValue = "0") Integer page,
+                                                           @RequestParam(value = "size",defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(driverFeedbackService.getAllDriverFeedbacksById(driverId,PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/driver-rate/{driverId}")
+    public ResponseEntity<?> getUserRate(@PathVariable("driverId") Long driverId)
+    {
+        return new ResponseEntity<>(driverFeedbackService.calculateAverageRating(driverId),HttpStatus.OK);
+    }
 }

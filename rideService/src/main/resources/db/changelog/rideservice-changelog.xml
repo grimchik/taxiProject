@@ -69,4 +69,37 @@
                 referencedColumnNames="id"
                 onDelete="CASCADE"/>
     </changeSet>
+
+    <changeSet id="7" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="driver_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="8" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="driver_id"
+                constraintName="fk_rides_drivers"
+                referencedTableName="drivers"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="9" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="car_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="10" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="car_id"
+                constraintName="fk_rides_cars"
+                referencedTableName="cars"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
 </databaseChangeLog>

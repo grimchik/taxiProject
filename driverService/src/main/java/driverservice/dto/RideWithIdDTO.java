@@ -1,4 +1,4 @@
-package rateservice.dto;
+package driverservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

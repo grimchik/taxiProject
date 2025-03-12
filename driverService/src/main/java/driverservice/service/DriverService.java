@@ -1,7 +1,11 @@
 package driverservice.service;
 
+import driverservice.client.CarServiceClient;
+import driverservice.client.DriverFeedbackServiceClient;
+import driverservice.client.RideServiceClient;
 import driverservice.dto.*;
 import driverservice.entity.Driver;
+import driverservice.enums.Category;
 import driverservice.exception.SamePasswordException;
 import driverservice.mapper.DriverMapper;
 import driverservice.mapper.DriverWithIdMapper;
@@ -25,9 +29,17 @@ public class DriverService {
     private final DriverWithoutPasswordMapper driverWithoutPasswordMapper = DriverWithoutPasswordMapper.INSTANCE;
     private final DriverWithIdMapper driverWithIdMapper = DriverWithIdMapper.INSTANCE;
 
-    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder) {
+    private final RideServiceClient rideServiceClient;
+    private final DriverFeedbackServiceClient driverFeedbackServiceClient;
+    private final CarServiceClient carServiceClient;
+    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder,
+                         RideServiceClient rideServiceClient, DriverFeedbackServiceClient driverFeedbackServiceClient,
+                         CarServiceClient carServiceClient) {
         this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rideServiceClient = rideServiceClient;
+        this.driverFeedbackServiceClient=driverFeedbackServiceClient;
+        this.carServiceClient=carServiceClient;
     }
 
     public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
@@ -130,5 +142,87 @@ public class DriverService {
         if (passwordEncoder.matches(password, driver.getPassword())) {
             throw new SamePasswordException("The new password cannot be the same as the old password.");
         }
+    }
+
+    public Page<RideWithIdDTO> getAvailableRides (Integer page, Integer size)
+    {
+        return rideServiceClient.getAvailableRides(page,size);
+    }
+
+    public Page<RideWithIdDTO> getCompletedRides (Long driverId,Integer page, Integer size)
+    {
+        return rideServiceClient.getCompletedRides(driverId,page,size);
+    }
+
+    public Page<DriverFeedbackWithIdDTO> getAllFeedbacks (Long driverId, Integer page, Integer size)
+    {
+        return driverFeedbackServiceClient.getFeedbacks(driverId,page,size);
+    }
+
+    public RateDTO getDriverRate(Long driverId)
+    {
+        return driverFeedbackServiceClient.getDriverRate(driverId);
+    }
+
+    public DriverFeedbackWithIdDTO changeFeedback(Long feedbackId, UpdateDriverRateDTO updateDriverRateDTO) {
+        return driverFeedbackServiceClient.changeFeedBack(feedbackId,updateDriverRateDTO);
+    }
+
+    public DriverFeedbackWithIdDTO createFeedback(DriverFeedbackDTO driverFeedbackDTO)
+    {
+        return driverFeedbackServiceClient.createDriverFeedback(driverFeedbackDTO);
+    }
+
+    private CarWithIdDTO getCar (Long carId)
+    {
+        return carServiceClient.getCarById(carId);
+    }
+
+    @Transactional
+    public DriverWithIdDTO assignCarToDriver(Long driverId, Long carId)
+    {
+        Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        if (driverOptional.isPresent()) {
+            throw new EntityExistsException("This car is already assigned to another driver.");
+        }
+        if (rideServiceClient.getActiveRide(driverId).getId() != null) {
+            throw new IllegalStateException("Driver already has an active ride. Cannot assign a car until the current ride is completed.");
+        }
+        CarWithIdDTO car = getCar(carId);
+        RateDTO rateDTO = getDriverRate(driverId);
+        if (car.getCategory().equals(Category.BUSINESS.name()) && rateDTO.getRate() >= 4.5) {
+            driver.setCarId(car.getId());
+        } else if (car.getCategory().equals(Category.COMFORT.name()) && rateDTO.getRate() >= 3.0) {
+            driver.setCarId(car.getId());
+        } else if (car.getCategory().equals(Category.ECONOMY.name())) {
+            driver.setCarId(car.getId());
+        } else {
+            throw new IllegalStateException("Driver cannot be assigned this car based on rating or category.");
+        }
+        driverRepository.save(driver);
+        return driverWithIdMapper.toDTO(driver);
+    }
+
+    @Transactional
+    public DriverWithIdDTO unassignCarFromDriver(Long driverId, Long carId)
+    {
+        Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        if (driverOptional.isEmpty()) {
+            throw new EntityNotFoundException("Car is not assigned to any driver.");
+        }
+        if (rideServiceClient.getActiveRide(driverId).getId() != null) {
+            throw new IllegalStateException("Driver already has an active ride. Cannot unassign car until the current ride is completed.");
+        }
+        if (!driver.getId().equals(driverId))
+        {
+            throw new IllegalStateException("This car is currently assigned to another driver.");
+        }
+        driver.setCarId(null);
+        driverRepository.save(driver);
+        return driverWithIdMapper.toDTO(driver);
     }
 }

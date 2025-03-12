@@ -32,7 +32,9 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> changePassword(@PathVariable("id") Long id, @RequestBody @Valid UpdateUserDTO updateUserDTO) {
+    public ResponseEntity<?> changePassword(@PathVariable("id") Long id,
+                                            @RequestBody @Valid UpdateUserDTO updateUserDTO)
+    {
         return new ResponseEntity<>(userService.changeUser(id, updateUserDTO), HttpStatus.OK);
     }
 
@@ -43,12 +45,15 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getAllProfiles(@RequestParam(value = "page", defaultValue = "0") Integer page,
-                                            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+                                            @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
         return new ResponseEntity<>(userService.getAllProfiles(PageRequest.of(page, size)), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProfile(@RequestBody @Valid UserDTO userDTO, @PathVariable("id") Long id) {
+    public ResponseEntity<?> updateProfile(@PathVariable("id") Long id,
+                                           @RequestBody @Valid UserDTO userDTO)
+    {
         return new ResponseEntity<>(userService.updateProfile(id, userDTO), HttpStatus.OK);
     }
 
@@ -60,19 +65,23 @@ public class UserController {
     @GetMapping("/user-rides/{userId}")
     public ResponseEntity<?> getUserRides(@PathVariable("userId") Long userId,
                                           @RequestParam(value = "page", defaultValue = "0") Integer page,
-                                          @RequestParam(value = "size", defaultValue = "5") Integer size) {
+                                          @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
         return new ResponseEntity<>(userService.getRidesByUserId(userId, page, size), HttpStatus.OK);
     }
 
     @PatchMapping("/update-ride/{id}")
-    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId, @RequestBody UpdateRideDTO updateRideDTO) {
+    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId,
+                                        @RequestBody UpdateRideDTO updateRideDTO)
+    {
         return new ResponseEntity<>(userService.changeRide(rideId, updateRideDTO), HttpStatus.OK);
     }
 
     @PostMapping("/cancel-ride/{rideId}")
     public ResponseEntity<?> cancelRide(
             @PathVariable("rideId") Long rideId,
-            @RequestParam("userId") Long userId) {
+            @RequestParam("userId") Long userId)
+    {
         CanceledRideDTO canceledRideDTO = new CanceledRideDTO(userId, rideId);
         userService.cancelRide(canceledRideDTO);
         return ResponseEntity.accepted().build();
@@ -105,6 +114,13 @@ public class UserController {
         return new ResponseEntity<>(userService.getUserRate(userId),HttpStatus.OK);
     }
 
+    @PatchMapping("/update-feedback/{feedbackId}")
+    public ResponseEntity<?> updateFeedback(@PathVariable("feedbackId") Long feedbackId,
+                                            @RequestBody UpdateClientRateDTO updateClientRateDTO)
+    {
+        return new ResponseEntity<>(userService.changeFeedback(feedbackId, updateClientRateDTO), HttpStatus.OK);
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //ADMIN METHODS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,7 +142,8 @@ public class UserController {
     }
 
     @PatchMapping("/change-car/{carId}")
-    public ResponseEntity<?> changeCar (@PathVariable("carId") Long carId, @RequestBody UpdateCarDTO updateCarDTO)
+    public ResponseEntity<?> changeCar (@PathVariable("carId") Long carId,
+                                        @RequestBody UpdateCarDTO updateCarDTO)
     {
         return new ResponseEntity<>(userService.changeCar(carId,updateCarDTO),HttpStatus.OK);
     }
