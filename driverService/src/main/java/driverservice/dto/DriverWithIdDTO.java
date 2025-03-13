@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DriverWithIdDTO {
     private Long id;
+    private Long carId;
     private String name;
     private String username;
     private String phone;

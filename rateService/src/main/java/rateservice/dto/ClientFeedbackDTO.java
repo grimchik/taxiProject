@@ -26,4 +26,10 @@ public class ClientFeedbackDTO
     private Boolean safeDriving;
 
     private Boolean niceMusic;
+
+    @NotNull(message = "User id cannot be null")
+    private Long userId;
+
+    @NotNull(message = "Ride id cannot be null")
+    private Long rideId;
 }

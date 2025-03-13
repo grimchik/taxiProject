@@ -1,9 +1,15 @@
 package driverservice.service;
 
+import driverservice.client.CarServiceClient;
+import driverservice.client.DriverFeedbackServiceClient;
+import driverservice.client.RideServiceClient;
 import driverservice.dto.*;
-import driverservice.dto.DriverWithoutPasswordDTO;
 import driverservice.entity.Driver;
+import driverservice.enums.Category;
 import driverservice.exception.SamePasswordException;
+import driverservice.kafkaservice.CancelRideByDriverProducer;
+import driverservice.kafkaservice.FinishRideProducer;
+import driverservice.kafkaservice.RideInProgressProducer;
 import driverservice.mapper.DriverMapper;
 import driverservice.mapper.DriverWithIdMapper;
 import driverservice.mapper.DriverWithoutPasswordMapper;
@@ -12,28 +18,44 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 public class DriverService {
     private final DriverRepository driverRepository;
+    private final PasswordEncoder passwordEncoder;
     private final DriverMapper driverMapper = DriverMapper.INSTANCE;
     private final DriverWithoutPasswordMapper driverWithoutPasswordMapper = DriverWithoutPasswordMapper.INSTANCE;
     private final DriverWithIdMapper driverWithIdMapper = DriverWithIdMapper.INSTANCE;
-    private final PasswordEncoder passwordEncoder;
 
-    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder)
-    {
-        this.driverRepository=driverRepository;
+    private final RideServiceClient rideServiceClient;
+    private final DriverFeedbackServiceClient driverFeedbackServiceClient;
+    private final CarServiceClient carServiceClient;
+
+    private final CancelRideByDriverProducer cancelRideByDriverProducer;
+    private final RideInProgressProducer rideInProgressProducer;
+    private final FinishRideProducer finishRideProducer;
+    public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder,
+                         RideServiceClient rideServiceClient, DriverFeedbackServiceClient driverFeedbackServiceClient,
+                         CarServiceClient carServiceClient,CancelRideByDriverProducer cancelRideByDriverProducer,
+                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer) {
+        this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rideServiceClient = rideServiceClient;
+        this.driverFeedbackServiceClient=driverFeedbackServiceClient;
+        this.carServiceClient=carServiceClient;
+        this.cancelRideByDriverProducer=cancelRideByDriverProducer;
+        this.rideInProgressProducer=rideInProgressProducer;
+        this.finishRideProducer=finishRideProducer;
     }
 
-    @Transactional
-    public DriverWithIdDTO createDriver(DriverDTO driverDTO) throws EntityExistsException{
+    public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
         if (driverRepository.findByUsername(driverDTO.getUsername()).isPresent()) {
             throw new EntityExistsException("Driver with the same username already exists");
         }
@@ -41,28 +63,45 @@ public class DriverService {
             throw new EntityExistsException("Driver with the same phone already exists");
         }
         Driver driver = driverMapper.toEntity(driverDTO);
-        driver.setPassword(passwordEncoder.encode(driver.getPassword()));
+        driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
         driverRepository.save(driver);
-        return  driverWithIdMapper.toDTO(driver);
+        return driverWithIdMapper.toDTO(driver);
     }
 
     @Transactional
-    public DriverWithoutPasswordDTO updateProfile(Long id ,DriverDTO driverDTO)
-    {
+    public void deleteById(Long id) {
         Driver driver = findActiveDriverById(id);
-        if (driverRepository.findByUsername(driverDTO.getUsername())
-                .filter(d -> !d.getId().equals(driver.getId())).isPresent()) {
-            throw new EntityExistsException("Driver with this username already exists");
-        }
+        driverRepository.softDeleteByUsername(driver.getUsername());
+    }
 
-        if (driverRepository.findByPhone(driverDTO.getPhone())
-                .filter(d -> !d.getId().equals(driver.getId())).isPresent()) {
-            throw new EntityExistsException("Driver with this phone already exists");
-        }
+    private Driver findActiveDriverById(Long id) {
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        checkIsDeleted(driver.getIsDeleted());
+        return driver;
+    }
 
-        if (passwordEncoder.matches(driverDTO.getPassword(), driver.getPassword())) {
-            throw new SamePasswordException("The new password cannot be the same as the old password.");
+    private void checkIsDeleted(boolean deleted) {
+        if (deleted) {
+            throw new IllegalStateException("Driver has already been deleted");
         }
+    }
+
+    public DriverWithIdDTO getDriverById(Long id) {
+        Driver driver = findActiveDriverById(id);
+        return driverWithIdMapper.toDTO(driver);
+    }
+
+    public Page<DriverWithIdDTO> getAllDrivers(Pageable pageable) {
+        return driverRepository.findAll(pageable).map(driverWithIdMapper::toDTO);
+    }
+
+    @Transactional
+    public DriverWithoutPasswordDTO updateProfile(Long id, DriverDTO driverDTO) {
+        Driver driver = findActiveDriverById(id);
+        checkUsername(driver, driverDTO.getUsername());
+        checkPhone(driver, driverDTO.getPhone());
+        checkPassword(driver, driverDTO.getPassword());
         driver.setName(driverDTO.getName());
         driver.setUsername(driverDTO.getUsername());
         driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
@@ -71,54 +110,17 @@ public class DriverService {
         return driverWithoutPasswordMapper.toDTO(driver);
     }
 
-    private Driver findActiveDriverById(Long id) {
-        Optional<Driver> driverOptional = driverRepository.findById(id);
-        if (driverOptional.isEmpty()) {
-            throw new EntityNotFoundException("Driver not found");
-        }
-        Driver driver = driverOptional.get();
-        if (driver.getIsDeleted()) {
-            throw new IllegalStateException("Driver has already been deleted");
-        }
-        return driver;
-    }
-
-
     @Transactional
-    public void deleteById(Long id)
-    {
-        Driver driver = findActiveDriverById(id);
-        driverRepository.softDeleteByUsername(driver.getUsername());
-    }
-
-    public Page<DriverWithIdDTO> getAllDrivers(Pageable pageable) {
-        return driverRepository.findAll(pageable).map(driverWithIdMapper::toDTO);
-    }
-
-    public DriverWithIdDTO getDriverById (Long id)
-    {
-        Driver driver = findActiveDriverById(id);
-        return driverWithIdMapper.toDTO(driver);
-    }
-
-    @Transactional
-    public DriverWithIdDTO changeDriver (Long id, UpdateDriverDTO updateDriverDTO)
-    {
+    public DriverWithIdDTO changeDriver(Long id, UpdateDriverDTO updateDriverDTO) {
         Driver driver = findActiveDriverById(id);
 
         if (updateDriverDTO.getUsername() != null && !updateDriverDTO.getUsername().isBlank()) {
-            if (driverRepository.findByUsername(updateDriverDTO.getUsername()).isPresent() &&
-                    !updateDriverDTO.getUsername().equals(driver.getUsername())) {
-                throw new EntityExistsException("Driver with the same username already exists");
-            }
+            checkUsername(driver, updateDriverDTO.getUsername());
             driver.setUsername(updateDriverDTO.getUsername());
         }
 
         if (updateDriverDTO.getPhone() != null && !updateDriverDTO.getPhone().isBlank()) {
-            if (driverRepository.findByPhone(updateDriverDTO.getPhone()).isPresent() &&
-                    !updateDriverDTO.getPhone().equals(driver.getPhone())) {
-                throw new EntityExistsException("Driver with the same phone already exists");
-            }
+            checkPhone(driver, updateDriverDTO.getPhone());
             driver.setPhone(updateDriverDTO.getPhone());
         }
 
@@ -127,9 +129,7 @@ public class DriverService {
         }
 
         if (updateDriverDTO.getPassword() != null && !updateDriverDTO.getPassword().isBlank()) {
-            if (passwordEncoder.matches(updateDriverDTO.getPassword(), driver.getPassword())) {
-                throw new SamePasswordException("The new password cannot be the same as the old password.");
-            }
+            checkPassword(driver, updateDriverDTO.getPassword());
             driver.setPassword(passwordEncoder.encode(updateDriverDTO.getPassword()));
         }
 
@@ -137,4 +137,142 @@ public class DriverService {
         return driverWithIdMapper.toDTO(driver);
     }
 
+    private void checkUsername(Driver driver, String username) {
+        if (driverRepository.findByUsername(username).isPresent() &&
+                !username.equals(driver.getUsername())) {
+            throw new EntityExistsException("Driver with the same username already exists");
+        }
+    }
+
+    private void checkPhone(Driver driver, String phone) {
+        if (driverRepository.findByPhone(phone).isPresent() &&
+                !phone.equals(driver.getPhone())) {
+            throw new EntityExistsException("Driver with the same phone already exists");
+        }
+    }
+
+    private void checkPassword(Driver driver, String password) {
+        if (passwordEncoder.matches(password, driver.getPassword())) {
+            throw new SamePasswordException("The new password cannot be the same as the old password.");
+        }
+    }
+
+    public Page<RideWithIdDTO> getAvailableRides (Integer page, Integer size)
+    {
+        return rideServiceClient.getAvailableRides(page,size);
+    }
+
+    public Page<RideWithIdDTO> getCompletedRides (Long driverId,Integer page, Integer size)
+    {
+        return rideServiceClient.getCompletedRides(driverId,page,size);
+    }
+
+    public Page<DriverFeedbackWithIdDTO> getAllFeedbacks (Long driverId, Integer page, Integer size)
+    {
+        return driverFeedbackServiceClient.getFeedbacks(driverId,page,size);
+    }
+
+    public RateDTO getDriverRate(Long driverId)
+    {
+        return driverFeedbackServiceClient.getDriverRate(driverId);
+    }
+
+    public DriverFeedbackWithIdDTO changeFeedback(Long feedbackId, UpdateDriverRateDTO updateDriverRateDTO) {
+        return driverFeedbackServiceClient.changeFeedBack(feedbackId,updateDriverRateDTO);
+    }
+
+    public DriverFeedbackWithIdDTO createFeedback(DriverFeedbackDTO driverFeedbackDTO)
+    {
+        return driverFeedbackServiceClient.createDriverFeedback(driverFeedbackDTO);
+    }
+
+    private CarWithIdDTO getCar (Long carId)
+    {
+        return carServiceClient.getCarById(carId);
+    }
+
+    @Transactional
+    public DriverWithIdDTO assignCarToDriver(Long driverId, Long carId)
+    {
+        Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        if (driverOptional.isPresent()) {
+            throw new EntityExistsException("This car is already assigned to another driver.");
+        }
+        if (rideServiceClient.getActiveRide(driverId).getId() != null) {
+            throw new IllegalStateException("Driver already has an active ride. Cannot assign a car until the current ride is completed.");
+        }
+        CarWithIdDTO car = getCar(carId);
+        RateDTO rateDTO = getDriverRate(driverId);
+        if (car.getCategory().equals(Category.BUSINESS.name()) && rateDTO.getRate() >= 4.5) {
+            driver.setCarId(car.getId());
+        } else if (car.getCategory().equals(Category.COMFORT.name()) && rateDTO.getRate() >= 3.0) {
+            driver.setCarId(car.getId());
+        } else if (car.getCategory().equals(Category.ECONOMY.name())) {
+            driver.setCarId(car.getId());
+        } else {
+            throw new IllegalStateException("Driver cannot be assigned this car based on rating or category.");
+        }
+        driverRepository.save(driver);
+        return driverWithIdMapper.toDTO(driver);
+    }
+
+    @Transactional
+    public DriverWithIdDTO unassignCarFromDriver(Long driverId, Long carId)
+    {
+        Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        if (driverOptional.isEmpty()) {
+            throw new EntityNotFoundException("Car is not assigned to any driver.");
+        }
+        if (rideServiceClient.getActiveRide(driverId).getId() != null) {
+            throw new IllegalStateException("Driver already has an active ride. Cannot unassign car until the current ride is completed.");
+        }
+        if (!driver.getId().equals(driverId))
+        {
+            throw new IllegalStateException("This car is currently assigned to another driver.");
+        }
+        driver.setCarId(null);
+        driverRepository.save(driver);
+        return driverWithIdMapper.toDTO(driver);
+    }
+
+    public RideWithIdDTO applyRide(Long rideId,Long driverId)
+    {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+
+        if (driver.getCarId() == null)
+        {
+            throw new IllegalStateException("Driver has no assigned car.");
+        }
+
+        CarAndDriverIdDTO carAndDriverIdDTO= new CarAndDriverIdDTO(driver.getCarId(),driverId);
+        return rideServiceClient.applyRide(rideId,carAndDriverIdDTO);
+    }
+
+    public void cancelRide(CanceledRideByDriverDTO canceledRideByDriverDTO) {
+        cancelRideByDriverProducer.sendCancelRequest(canceledRideByDriverDTO);
+    }
+
+    public void startRide(RideInProgressDTO rideInProgressDTO) {
+        rideInProgressProducer.sendRideInProgressRequest(rideInProgressDTO);
+    }
+
+    public void finishRide(FinishRideDTO finishRideDTO)
+    {
+        finishRideProducer.sendFinishRequest(finishRideDTO);
+    }
+
+    public Page<RideWithIdDTO> getCompletedRidesPeriod(Long driverId, LocalDateTime start, LocalDateTime end, int page, int size)
+    {
+        return rideServiceClient.getCompletedRidesPeriod(driverId,start,end,page,size);
+    }
+
+    public EarningDTO getEarnings(Long driverId, LocalDateTime start, LocalDateTime end)
+    {
+        return rideServiceClient.getEarnings(driverId,start,end);
+    }
 }

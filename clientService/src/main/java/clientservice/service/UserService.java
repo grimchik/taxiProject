@@ -1,14 +1,18 @@
 package clientservice.service;
 
+import clientservice.client.*;
 import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
+import clientservice.kafkaservice.CancelRideProducer;
+import clientservice.kafkaservice.CheckPromoCodeProducer;
 import clientservice.mapper.UserMapper;
 import clientservice.mapper.UserWithIdMapper;
 import clientservice.mapper.UserWithoutPasswordMapper;
 import clientservice.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,13 +24,36 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+
     private final PasswordEncoder passwordEncoder;
+
     private final UserMapper userMapper = UserMapper.INSTANCE;
     private final UserWithoutPasswordMapper userWithoutPasswordMapper = UserWithoutPasswordMapper.INSTANCE;
     private final UserWithIdMapper userWithIdMapper = UserWithIdMapper.INSTANCE;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+
+    private final CancelRideProducer cancelRideProducer;
+    private final CheckPromoCodeProducer checkPromoCodeProducer;
+
+    private final RideServiceClient rideServiceClient;
+    private final CarServiceClient carServiceClient;
+    private final PromoCodeServiceClient promoCodeServiceClient;
+    private final FeedbackServiceClient feedbackServiceClient;
+    private final PaymentServiceClient paymentServiceClient;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer,
+                       CarServiceClient carServiceClient,PromoCodeServiceClient promoCodeServiceClient,
+                       CheckPromoCodeProducer checkPromoCodeProducer,FeedbackServiceClient feedbackServiceClient,
+                       PaymentServiceClient paymentServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rideServiceClient=rideServiceClient;
+        this.cancelRideProducer=cancelRideProducer;
+        this.carServiceClient=carServiceClient;
+        this.promoCodeServiceClient=promoCodeServiceClient;
+        this.checkPromoCodeProducer=checkPromoCodeProducer;
+        this.feedbackServiceClient=feedbackServiceClient;
+        this.paymentServiceClient=paymentServiceClient;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -45,32 +72,29 @@ public class UserService {
     @Transactional
     public void deleteUserById(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User not found");
-        }
+        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
         User user = userOptional.get();
-        if (user.getIsDeleted()) {
-            throw new IllegalStateException("User with " + user.getUsername() + " has already been deleted");
-        }
+        checkIsDeleted(user.getIsDeleted());
         userRepository.softDeleteByUsername(user.getUsername());
     }
-
-    private User findActiveUserById(Long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new EntityNotFoundException("User not found");
-        }
-        User user = userOptional.get();
-        if (user.getIsDeleted()) {
+    private void checkIsDeleted(boolean deleted)
+    {
+        if (deleted)
+        {
             throw new IllegalStateException("User has already been deleted");
         }
+    }
+    private User findActiveUserById(Long id) {
+        Optional<User> userOptional = userRepository.findById(id);
+        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
+        User user = userOptional.get();
+        checkIsDeleted(user.getIsDeleted());
         return user;
     }
 
     public UserWithIdDTO getUserProfile(Long id)
     {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return userWithIdMapper.toDTO(user);
     }
 
@@ -96,30 +120,45 @@ public class UserService {
         return userWithoutPasswordMapper.toDTO(user);
     }
 
+    private void checkUsername (User user, String username)
+    {
+        if (userRepository.findByUsername(username).isPresent() &&
+                !username.equals(user.getUsername())) {
+            throw new EntityExistsException("User with the same username already exists");
+        }
+    }
+
+    private void checkPhone (User user, String phone)
+    {
+        if (userRepository.findByPhone(phone).isPresent() &&
+                !phone.equals(user.getPhone())) {
+            throw new EntityExistsException("User with the same phone already exists");
+        }
+    }
+
+    private void checkPassword (User user, String password)
+    {
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            throw new SamePasswordException("The new password cannot be the same as the old password.");
+        }
+    }
+
     @Transactional
     public UserWithIdDTO changeUser(Long id, UpdateUserDTO updateUserDTO) {
         User user = findActiveUserById(id);
 
         if (updateUserDTO.getUsername() != null && !updateUserDTO.getUsername().isBlank()) {
-            if (userRepository.findByUsername(updateUserDTO.getUsername()).isPresent() &&
-                    !updateUserDTO.getUsername().equals(user.getUsername())) {
-                throw new EntityExistsException("User with the same username already exists");
-            }
+            checkUsername(user,updateUserDTO.getUsername());
             user.setUsername(updateUserDTO.getUsername());
         }
 
         if (updateUserDTO.getPhone() != null && !updateUserDTO.getPhone().isBlank()) {
-            if (userRepository.findByPhone(updateUserDTO.getPhone()).isPresent() &&
-                    !updateUserDTO.getPhone().equals(user.getPhone())) {
-                throw new EntityExistsException("User with the same phone already exists");
-            }
+           checkPhone(user,updateUserDTO.getPhone());
             user.setPhone(updateUserDTO.getPhone());
         }
 
         if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isBlank()) {
-            if (passwordEncoder.matches(updateUserDTO.getPassword(), user.getPassword())) {
-                throw new SamePasswordException("The new password cannot be the same as the old password.");
-            }
+            checkPassword(user,updateUserDTO.getPassword());
             user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
 
@@ -127,4 +166,102 @@ public class UserService {
         return userWithIdMapper.toDTO(user);
     }
 
+    public Page<RideWithIdDTO> getRidesByUserId(Long userId, Integer page, Integer size) {
+        return rideServiceClient.getRides(userId, page, size);
+    }
+
+    public RideWithIdDTO createRide(RideDTO rideDTO)
+    {
+        return rideServiceClient.createRide(rideDTO);
+    }
+
+    public RideWithIdDTO changeRide(Long rideId,UpdateRideDTO updateRideDTO)
+    {
+        return rideServiceClient.changeRide(rideId,updateRideDTO);
+    }
+
+    public CarWithIdDTO createCar (CarCreateDTO carCreateDTO)
+    {
+        return carServiceClient.createCar(carCreateDTO);
+    }
+
+    public CarWithIdDTO changeCar (Long carId,UpdateCarDTO updateCarDTO)
+    {
+        return carServiceClient.changeCar(carId, updateCarDTO);
+    }
+
+    public void deleteCar(Long carId)
+    {
+        carServiceClient.deleteCar(carId);
+    }
+
+    public Page<CarWithIdDTO> getAllCars (Pageable pageable)
+    {
+        return carServiceClient.getAllCars(pageable);
+    }
+
+    public PromoCodeWithIdDTO createPromoCode (PromoCodeDTO promoCodeDTO)
+    {
+        return promoCodeServiceClient.createPromoCode(promoCodeDTO);
+    }
+
+    public PromoCodeWithIdDTO changePromoCode (Long promoCodeId,UpdatePromoCodeDTO updatePromoCodeDTO)
+    {
+        return promoCodeServiceClient.changePromoCode(promoCodeId, updatePromoCodeDTO);
+    }
+
+    public void deletePromoCode(Long promoCodeId)
+    {
+        promoCodeServiceClient.deletePromoCode(promoCodeId);
+    }
+
+    public Page<PromoCodeWithIdDTO> getAllPromoCodes (Pageable pageable)
+    {
+        return promoCodeServiceClient.getAllPromoCodes(pageable);
+    }
+
+    public void cancelRide(CanceledRideDTO canceledRideDTO)
+    {
+        cancelRideProducer.sendCancelRequest(canceledRideDTO);
+    }
+
+    public void checkPromoCode(CheckPromoCodeDTO checkPromoCodeDTO)
+    {
+        checkPromoCodeProducer.sendCheckPromoCodeRequest(checkPromoCodeDTO);
+    }
+
+    public Page<ClientFeedbackWithIdDTO> getAllFeedbacks (Long userId, Integer page, Integer size)
+    {
+        return feedbackServiceClient.getFeedbacks(userId,page,size);
+    }
+
+
+    public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO)
+    {
+        return feedbackServiceClient.createClientFeedback(clientFeedbackDTO);
+    }
+
+    public RateDTO getUserRate(Long userId)
+    {
+        return feedbackServiceClient.getUserRate(userId);
+    }
+
+    public ClientFeedbackWithIdDTO changeFeedback (Long feedbackId,UpdateClientRateDTO updateClientRateDTO)
+    {
+        return feedbackServiceClient.changeFeedBack(feedbackId, updateClientRateDTO);
+    }
+
+    public Page<PaymentWithIdDTO> getAllPaymentsByUser (Long userId, int page,int size)
+    {
+        return paymentServiceClient.getAllPaymentsByUser(userId,page,size);
+    }
+
+    public PaymentWithIdDTO getPendingPaymentByUser(Long userId)
+    {
+        return paymentServiceClient.getPendingPaymentByUser(userId);
+    }
+
+    public PaymentWithIdDTO confirmedPayment(Long userId, Long paymentId, ConfirmedPaymentDTO confirmedPaymentDTO) {
+        return paymentServiceClient.confirmedPayment(userId,paymentId,confirmedPaymentDTO);
+    }
 }

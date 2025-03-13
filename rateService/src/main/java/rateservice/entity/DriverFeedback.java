@@ -30,4 +30,10 @@ public class DriverFeedback {
 
     @Column(nullable = true)
     private Boolean punctuality;
+
+    @Column(name = "driver_id", nullable = false)
+    private Long driverId;
+
+    @Column(name = "ride_id", nullable = false)
+    private Long rideId;
 }

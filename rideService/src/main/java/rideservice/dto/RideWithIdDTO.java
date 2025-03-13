@@ -10,6 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RideWithIdDTO {
+    private Long userId;
+    private Long driverId;
+    private Long carId;
     private Long id;
     private List<LocationDTO> locations;
     private String status;

@@ -1,13 +1,11 @@
 package rateservice.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rateservice.dto.ClientFeedbackDTO;
-import rateservice.dto.RateDTO;
 import rateservice.dto.UpdateClientRateDTO;
 import rateservice.service.ClientFeedbackService;
 
@@ -51,5 +49,19 @@ public class ClientFeedbackController {
                                                    @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
         return new ResponseEntity<>(clientFeedbackService.getAllClientFeedbacks(PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/user-feedbacks/{userId}")
+    public ResponseEntity<?> getAllClientFeedbacksByUserId(@PathVariable("userId") Long userId,
+                                                           @RequestParam(value = "page",defaultValue = "0") Integer page,
+                                                           @RequestParam(value = "size",defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(clientFeedbackService.getAllClientFeedbacksById(userId,PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/user-rate/{userId}")
+    public ResponseEntity<?> getUserRate(@PathVariable("userId") Long userId)
+    {
+        return new ResponseEntity<>(clientFeedbackService.calculateAverageRating(userId),HttpStatus.OK);
     }
 }

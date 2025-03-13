@@ -12,4 +12,6 @@ public class ClientFeedbackWithIdDTO {
     private Boolean cleanInterior;
     private Boolean safeDriving;
     private Boolean niceMusic;
+    private Long userId;
+    private Long rideId;
 }

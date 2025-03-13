@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import promocodeservice.dto.*;
 import promocodeservice.entity.PromoCode;
+import promocodeservice.kafkaservice.ApplyPromoCodeProducer;
 import promocodeservice.mapper.PromoCodeMapper;
 import promocodeservice.mapper.PromoCodeWithIdMapper;
 import promocodeservice.repository.PromoCodeRepository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -20,9 +22,19 @@ public class PromoCodeService {
     private final PromoCodeMapper promoCodeMapper = PromoCodeMapper.INSTANCE;
     private final PromoCodeWithIdMapper promoCodeWithIdMapper = PromoCodeWithIdMapper.INSTANCE;
 
-    public PromoCodeService(PromoCodeRepository promoCodeRepository)
+    private final ApplyPromoCodeProducer applyPromoCodeProducer;
+    public PromoCodeService(PromoCodeRepository promoCodeRepository, ApplyPromoCodeProducer applyPromoCodeProducer)
     {
         this.promoCodeRepository=promoCodeRepository;
+        this.applyPromoCodeProducer=applyPromoCodeProducer;
+    }
+
+    private void checkPromoCodeExist(PromoCode promoCode,String keyword)
+    {
+        if (promoCodeRepository.findByKeyword(keyword).isPresent() && !promoCode.getKeyword().equals(keyword))
+        {
+            throw new EntityExistsException("PromoCode with the same keyword already exist");
+        }
     }
 
     @Transactional
@@ -40,10 +52,7 @@ public class PromoCodeService {
     public PromoCodeWithIdDTO getPromoCodeById (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
         return promoCodeWithIdMapper.toDTO(promoCodeOptional.get());
     }
 
@@ -51,15 +60,9 @@ public class PromoCodeService {
     public PromoCodeWithIdDTO updatePromoCode (Long id, PromoCodeDTO promoCodeDTO)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
         PromoCode promoCode = promoCodeOptional.get();
-        if (promoCodeRepository.findByKeyword(promoCodeDTO.getKeyword()).isPresent() && !promoCode.getKeyword().equals(promoCodeDTO.getKeyword()))
-        {
-            throw new EntityExistsException("PromoCode with the same keyword already exist");
-        }
+        checkPromoCodeExist(promoCode, promoCodeDTO.getKeyword());
         promoCode.setPercent(promoCodeDTO.getPercent());
         promoCode.setExpiryDate(promoCodeDTO.getExpiryDate());
         promoCode.setKeyword(promoCodeDTO.getKeyword());
@@ -73,10 +76,7 @@ public class PromoCodeService {
                 .orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
 
         if (updatePromoCodeDTO.getKeyword() != null) {
-            if (promoCodeRepository.findByKeyword(updatePromoCodeDTO.getKeyword()).isPresent() &&
-                    !promoCode.getKeyword().equals(updatePromoCodeDTO.getKeyword())) {
-                throw new EntityExistsException("PromoCode with the same keyword already exists");
-            }
+            checkPromoCodeExist(promoCode, updatePromoCodeDTO.getKeyword());
             promoCode.setKeyword(updatePromoCodeDTO.getKeyword());
         }
 
@@ -108,14 +108,23 @@ public class PromoCodeService {
     public void deletePromoCode (Long id)
     {
         Optional<PromoCode> promoCodeOptional = promoCodeRepository.findById(id);
-        if (promoCodeOptional.isEmpty())
-        {
-            throw new EntityNotFoundException("PromoCode not found");
-        }
+        promoCodeOptional.orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
         promoCodeRepository.delete(promoCodeOptional.get());
     }
 
     public Page<PromoCodeWithIdDTO> getAllPromoCodes(Pageable pageable) {
         return promoCodeRepository.findAll(pageable).map(promoCodeWithIdMapper::toDTO);
+    }
+
+    public void checkPromoCode (CheckPromoCodeDTO checkPromoCodeDTO)
+    {
+        Optional<PromoCode> promoCodeOptional = promoCodeRepository.findByKeyword(checkPromoCodeDTO.getKeyword());
+        PromoCode promoCode = promoCodeOptional.orElseThrow(() -> new EntityNotFoundException("PromoCode not found"));
+        if (promoCode.getExpiryDate().isBefore(LocalDate.now())) {
+            throw new IllegalStateException("PromoCode has expired");
+        }
+
+        ApplyPromocodeDTO applyPromocodeDTO = new ApplyPromocodeDTO (checkPromoCodeDTO.getUserId(),promoCode.getPercent());
+        applyPromoCodeProducer.sendApplyPromoCodeRequest(applyPromocodeDTO);
     }
 }
