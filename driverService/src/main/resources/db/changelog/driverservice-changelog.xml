@@ -32,4 +32,20 @@
         <modifyDataType tableName="drivers" columnName="phone" newDataType="varchar(30)"/>
     </changeSet>
 
+    <changeSet id="3" author="grimchik">
+        <addColumn tableName="drivers">
+            <column name="car_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="4" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="drivers"
+                baseColumnNames="car_id"
+                constraintName="fk_drivers_cars"
+                referencedTableName="cars"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
 </databaseChangeLog>

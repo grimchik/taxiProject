@@ -46,4 +46,60 @@
                 onDelete="CASCADE"/>
     </changeSet>
 
+    <changeSet id="4" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="user_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="5" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="promo_code_applied" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="6" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="user_id"
+                constraintName="fk_rides_users"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="7" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="driver_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="8" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="driver_id"
+                constraintName="fk_rides_drivers"
+                referencedTableName="drivers"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="9" author="grimchik">
+        <addColumn tableName="rides">
+            <column name="car_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="10" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="rides"
+                baseColumnNames="car_id"
+                constraintName="fk_rides_cars"
+                referencedTableName="cars"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
 </databaseChangeLog>

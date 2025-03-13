@@ -50,4 +50,59 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="3" author="grimchik">
+        <addColumn tableName="client_feedbacks">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ride_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="client_feedbacks"
+                baseColumnNames="ride_id"
+                constraintName="fk_client_feedbacks_rides"
+                referencedTableName="rides"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="client_feedbacks"
+                baseColumnNames="user_id"
+                constraintName="fk_client_feedbacks_users"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="4" author="grimchik">
+        <addColumn tableName="driver_feedbacks">
+            <column name="driver_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ride_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="driver_feedbacks"
+                baseColumnNames="ride_id"
+                constraintName="fk_driver_feedbacks_rides"
+                referencedTableName="rides"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="driver_feedbacks"
+                baseColumnNames="driver_id"
+                constraintName="fk_driver_feedbacks_users"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
 </databaseChangeLog>

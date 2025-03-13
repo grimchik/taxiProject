@@ -26,4 +26,8 @@ public class Payment {
     private LocalDateTime paymentDate;
     @Column(name="card_number",nullable = true)
     private String cardNumber;
+    @Column(name="ride_id", nullable = false)
+    private Long rideId;
+    @Column(name="user_id", nullable = false)
+    private Long userId;
 }

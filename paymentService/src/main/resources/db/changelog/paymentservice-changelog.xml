@@ -25,4 +25,36 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="2" author="grimchik">
+        <addColumn tableName="payments">
+            <column name="ride_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="payments"
+                baseColumnNames="ride_id"
+                constraintName="fk_payments_ridess"
+                referencedTableName="rides"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="4" author="grimchik">
+        <addColumn tableName="payments">
+            <column name="user_id" type="bigint" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="5" author="grimchik">
+        <addForeignKeyConstraint
+                baseTableName="payments"
+                baseColumnNames="user_id"
+                constraintName="fk_payments_users"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
 </databaseChangeLog>

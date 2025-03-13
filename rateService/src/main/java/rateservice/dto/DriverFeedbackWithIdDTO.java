@@ -12,4 +12,6 @@ public class DriverFeedbackWithIdDTO {
     private Boolean politePassenger;
     private Boolean cleanPassenger;
     private Boolean punctuality;
+    private Long driverId;
+    private Long rideId;
 }

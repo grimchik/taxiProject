@@ -1,5 +1,6 @@
 package clientservice.exceptionhandler;
 
+import clientservice.exception.KafkaSendException;
 import clientservice.exception.SamePasswordException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
@@ -8,15 +9,32 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLException;
 
 @RestControllerAdvice
 @Hidden
 public class UserExceptionHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ProblemDetail> handleFeignErrors(ResponseStatusException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(),ex.getMessage());
+        problemDetail.setTitle("Response status error");
+        return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
+    }
+
+    @ExceptionHandler(KafkaSendException.class)
+    public ResponseEntity<ProblemDetail> handleKafkaSendException(KafkaSendException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        problemDetail.setTitle("Internal Server Error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+    }
+
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<ProblemDetail> handleEntityExistException(EntityExistsException ex)
     {
@@ -65,6 +83,13 @@ public class UserExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problemDetail.setTitle("Same Password Error");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ProblemDetail> handleResponseStatusException(ResponseStatusException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
+        problemDetail.setTitle("Feign Client Error");
+        return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)
