@@ -1,5 +1,6 @@
 package driverservice.exceptionhandler;
 
+import driverservice.exception.KafkaSendException;
 import driverservice.exception.SamePasswordException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
@@ -22,6 +23,13 @@ public class DriverExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,ex.getMessage());
         problemDetail.setTitle("Exist error");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
+
+    @ExceptionHandler(KafkaSendException.class)
+    public ResponseEntity<ProblemDetail> handleKafkaSendException(KafkaSendException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        problemDetail.setTitle("Internal Server Error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

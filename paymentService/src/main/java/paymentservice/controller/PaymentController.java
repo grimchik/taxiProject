@@ -51,4 +51,19 @@ public class PaymentController {
     {
         return new ResponseEntity<>(paymentService.getAllPayments(PageRequest.of(page, size)),HttpStatus.OK);
     }
+
+    @GetMapping("/user-payments/{userId}")
+    public ResponseEntity<?> getAllPaymentsByUser(@PathVariable("userId") Long userId,
+                                                  @RequestParam(value = "page",defaultValue = "0") Integer page,
+                                                  @RequestParam(value = "size",defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(paymentService.getPaymentsByUser(userId,PageRequest.of(page, size)),HttpStatus.OK);
+    }
+
+    @GetMapping("/user-pending-payments/{userId}")
+    public ResponseEntity<?> getAllPaymentsByUser(@PathVariable("userId") Long userId)
+    {
+        return new ResponseEntity<>(paymentService.getPaymentByUserAndStatusDefault(userId),HttpStatus.OK);
+    }
+
 }

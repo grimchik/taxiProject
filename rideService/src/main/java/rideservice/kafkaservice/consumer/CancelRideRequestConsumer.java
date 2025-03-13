@@ -1,4 +1,4 @@
-package rideservice.kafkaservice;
+package rideservice.kafkaservice.consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;

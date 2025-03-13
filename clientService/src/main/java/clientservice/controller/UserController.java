@@ -77,10 +77,10 @@ public class UserController {
         return new ResponseEntity<>(userService.changeRide(rideId, updateRideDTO), HttpStatus.OK);
     }
 
-    @PostMapping("/cancel-ride/{rideId}")
+    @PostMapping("{userId}/cancel-ride/{rideId}")
     public ResponseEntity<?> cancelRide(
             @PathVariable("rideId") Long rideId,
-            @RequestParam("userId") Long userId)
+            @PathVariable("userId") Long userId)
     {
         CanceledRideDTO canceledRideDTO = new CanceledRideDTO(userId, rideId);
         userService.cancelRide(canceledRideDTO);

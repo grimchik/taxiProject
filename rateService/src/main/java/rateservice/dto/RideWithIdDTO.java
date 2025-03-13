@@ -12,6 +12,7 @@ import java.util.List;
 public class RideWithIdDTO {
     private Long userId;
     private Long driverId;
+    private Long carId;
     private Long id;
     private List<LocationDTO> locations;
     private String status;

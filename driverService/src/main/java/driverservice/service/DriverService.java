@@ -7,6 +7,9 @@ import driverservice.dto.*;
 import driverservice.entity.Driver;
 import driverservice.enums.Category;
 import driverservice.exception.SamePasswordException;
+import driverservice.kafkaservice.CancelRideByDriverProducer;
+import driverservice.kafkaservice.FinishRideProducer;
+import driverservice.kafkaservice.RideInProgressProducer;
 import driverservice.mapper.DriverMapper;
 import driverservice.mapper.DriverWithIdMapper;
 import driverservice.mapper.DriverWithoutPasswordMapper;
@@ -15,10 +18,12 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -32,14 +37,22 @@ public class DriverService {
     private final RideServiceClient rideServiceClient;
     private final DriverFeedbackServiceClient driverFeedbackServiceClient;
     private final CarServiceClient carServiceClient;
+
+    private final CancelRideByDriverProducer cancelRideByDriverProducer;
+    private final RideInProgressProducer rideInProgressProducer;
+    private final FinishRideProducer finishRideProducer;
     public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder,
                          RideServiceClient rideServiceClient, DriverFeedbackServiceClient driverFeedbackServiceClient,
-                         CarServiceClient carServiceClient) {
+                         CarServiceClient carServiceClient,CancelRideByDriverProducer cancelRideByDriverProducer,
+                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer) {
         this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient = rideServiceClient;
         this.driverFeedbackServiceClient=driverFeedbackServiceClient;
         this.carServiceClient=carServiceClient;
+        this.cancelRideByDriverProducer=cancelRideByDriverProducer;
+        this.rideInProgressProducer=rideInProgressProducer;
+        this.finishRideProducer=finishRideProducer;
     }
 
     public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
@@ -224,5 +237,42 @@ public class DriverService {
         driver.setCarId(null);
         driverRepository.save(driver);
         return driverWithIdMapper.toDTO(driver);
+    }
+
+    public RideWithIdDTO applyRide(Long rideId,Long driverId)
+    {
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+
+        if (driver.getCarId() == null)
+        {
+            throw new IllegalStateException("Driver has no assigned car.");
+        }
+
+        CarAndDriverIdDTO carAndDriverIdDTO= new CarAndDriverIdDTO(driver.getCarId(),driverId);
+        return rideServiceClient.applyRide(rideId,carAndDriverIdDTO);
+    }
+
+    public void cancelRide(CanceledRideByDriverDTO canceledRideByDriverDTO) {
+        cancelRideByDriverProducer.sendCancelRequest(canceledRideByDriverDTO);
+    }
+
+    public void startRide(RideInProgressDTO rideInProgressDTO) {
+        rideInProgressProducer.sendRideInProgressRequest(rideInProgressDTO);
+    }
+
+    public void finishRide(FinishRideDTO finishRideDTO)
+    {
+        finishRideProducer.sendFinishRequest(finishRideDTO);
+    }
+
+    public Page<RideWithIdDTO> getCompletedRidesPeriod(Long driverId, LocalDateTime start, LocalDateTime end, int page, int size)
+    {
+        return rideServiceClient.getCompletedRidesPeriod(driverId,start,end,page,size);
+    }
+
+    public EarningDTO getEarnings(Long driverId, LocalDateTime start, LocalDateTime end)
+    {
+        return rideServiceClient.getEarnings(driverId,start,end);
     }
 }
