@@ -135,6 +135,14 @@ public class UserController {
         return new ResponseEntity<>(userService.getPendingPaymentByUser(userId),HttpStatus.OK);
     }
 
+    @PatchMapping("/{userId}/confirmed-payment/{paymentId}")
+    public ResponseEntity<?> confirmedPayment(@PathVariable("userId") Long userId,
+                                              @PathVariable("paymentId") Long paymentId,
+                                              @Valid @RequestBody ConfirmedPaymentDTO confirmedPaymentDTO)
+    {
+        return new ResponseEntity<>(userService.confirmedPayment(userId, paymentId, confirmedPaymentDTO),HttpStatus.OK);
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //ADMIN METHODS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

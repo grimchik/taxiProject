@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import paymentservice.dto.ConfirmedPaymentDTO;
 import paymentservice.dto.PaymentDTO;
 import paymentservice.dto.UpdatePaymentDTO;
 import paymentservice.service.PaymentService;
@@ -66,4 +67,11 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.getPaymentByUserAndStatusDefault(userId),HttpStatus.OK);
     }
 
+    @PatchMapping("/{userId}/confirmed-payment/{paymentId}")
+    public ResponseEntity<?> confirmedPayment(@PathVariable("userId") Long userId,
+                                              @PathVariable("paymentId") Long paymentId,
+                                              @Valid @RequestBody ConfirmedPaymentDTO confirmedPaymentDTO)
+    {
+        return new ResponseEntity<>(paymentService.confirmedPayment(userId, paymentId, confirmedPaymentDTO),HttpStatus.OK);
+    }
 }

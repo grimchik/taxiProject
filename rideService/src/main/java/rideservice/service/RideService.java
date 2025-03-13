@@ -122,6 +122,7 @@ public class RideService {
                 location.setRide(ride);
                 ride.getLocations().add(location);
             }
+            ride.setPrice(calculatePrice(updateRideDTO.getLocations()));
         }
         rideRepository.save(ride);
         return rideWithIdMapper.toDTO(ride);

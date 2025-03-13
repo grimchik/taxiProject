@@ -131,6 +131,10 @@ public class PaymentService {
         Optional<Payment> paymentOptional = paymentRepository.findById(paymentId);
         paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
         Payment payment = paymentOptional.get();
+        if(!payment.getPaymentType().equals("DEFAULT"))
+        {
+            throw new IllegalStateException("This payment already paid");
+        }
         if (!payment.getUserId().equals(userId))
         {
             throw new IllegalStateException("");
@@ -140,6 +144,7 @@ public class PaymentService {
         {
             throw new IllegalStateException("");
         }
+
         payment.setPaymentType(confirmedPaymentDTO.getPaymentType());
         payment.setCardNumber(confirmedPaymentDTO.getCardNumber());
         payment.setPaymentDate(LocalDateTime.now());
