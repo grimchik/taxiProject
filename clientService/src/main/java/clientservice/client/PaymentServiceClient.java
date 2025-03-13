@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "payments-service", url = "http://localhost:8091/api/v1/payments/", configuration = FeignConfiguration.class)
+@FeignClient(name = "payments-service", url = "http://localhost:8080/api/v1/payments/", configuration = FeignConfiguration.class)
 public interface PaymentServiceClient {
     @GetMapping("/user-payments/{userId}")
     Page<PaymentWithIdDTO> getAllPaymentsByUser(@PathVariable("userId") Long userId,

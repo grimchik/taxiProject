@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@FeignClient(name = "ride-service", url = "http://localhost:8084/api/v1/rides", configuration = FeignConfiguration.class)
+@FeignClient(name = "ride-service", url = "http://localhost:8080/api/v1/rides", configuration = FeignConfiguration.class)
 public interface RideServiceClient {
     @GetMapping("/available-rides")
     Page<RideWithIdDTO> getAvailableRides(

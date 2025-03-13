@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "ride-service", url = "http://localhost:8084/api/v1/rides", configuration = FeignConfiguration.class)
+@FeignClient(name = "ride-service", url = "http://localhost:8080/api/v1/rides", configuration = FeignConfiguration.class)
 public interface RideServiceClient {
 
     @PostMapping("/")

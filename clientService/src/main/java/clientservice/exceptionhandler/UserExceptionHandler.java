@@ -21,12 +21,6 @@ import java.sql.SQLException;
 @Hidden
 public class UserExceptionHandler {
 
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ProblemDetail> handleFeignErrors(ResponseStatusException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(),ex.getMessage());
-        problemDetail.setTitle("Response status error");
-        return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
-    }
 
     @ExceptionHandler(KafkaSendException.class)
     public ResponseEntity<ProblemDetail> handleKafkaSendException(KafkaSendException ex) {

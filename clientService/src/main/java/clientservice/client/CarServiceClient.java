@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "car-service", url = "http://localhost:8083/api/v1/cars", configuration = FeignConfiguration.class)
+@FeignClient(name = "car-service", url = "http://localhost:8080/api/v1/cars", configuration = FeignConfiguration.class)
 public interface CarServiceClient {
     @GetMapping("/")
     Page<CarWithIdDTO> getAllCars (Pageable pageable);

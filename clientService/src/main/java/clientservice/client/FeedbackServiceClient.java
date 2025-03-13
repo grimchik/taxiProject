@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "client-feedbacks-service", url = "http://localhost:8085/api/v1/client-feedbacks/", configuration = FeignConfiguration.class)
+@FeignClient(name = "client-feedbacks-service", url = "http://localhost:8080/api/v1/client-feedbacks/", configuration = FeignConfiguration.class)
 public interface FeedbackServiceClient {
     @PostMapping("/")
     ClientFeedbackWithIdDTO createClientFeedback(@RequestBody ClientFeedbackDTO request);

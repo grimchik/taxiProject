@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "driver-feedbacks-service", url = "http://localhost:8085/api/v1/driver-feedbacks/", configuration = FeignConfiguration.class)
+@FeignClient(name = "driver-feedbacks-service", url = "http://localhost:8080/api/v1/driver-feedbacks/", configuration = FeignConfiguration.class)
 public interface DriverFeedbackServiceClient {
     @PostMapping("/")
     DriverFeedbackWithIdDTO createDriverFeedback(@RequestBody DriverFeedbackDTO request);
