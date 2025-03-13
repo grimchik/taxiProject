@@ -1,9 +1,6 @@
 package clientservice.service;
 
-import clientservice.client.CarServiceClient;
-import clientservice.client.FeedbackServiceClient;
-import clientservice.client.PromoCodeServiceClient;
-import clientservice.client.RideServiceClient;
+import clientservice.client.*;
 import clientservice.dto.*;
 import clientservice.entity.User;
 import clientservice.exception.SamePasswordException;
@@ -40,11 +37,13 @@ public class UserService {
     private final CarServiceClient carServiceClient;
     private final PromoCodeServiceClient promoCodeServiceClient;
     private final FeedbackServiceClient feedbackServiceClient;
+    private final PaymentServiceClient paymentServiceClient;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer,
                        CarServiceClient carServiceClient,PromoCodeServiceClient promoCodeServiceClient,
-                       CheckPromoCodeProducer checkPromoCodeProducer,FeedbackServiceClient feedbackServiceClient) {
+                       CheckPromoCodeProducer checkPromoCodeProducer,FeedbackServiceClient feedbackServiceClient,
+                       PaymentServiceClient paymentServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient=rideServiceClient;
@@ -53,6 +52,7 @@ public class UserService {
         this.promoCodeServiceClient=promoCodeServiceClient;
         this.checkPromoCodeProducer=checkPromoCodeProducer;
         this.feedbackServiceClient=feedbackServiceClient;
+        this.paymentServiceClient=paymentServiceClient;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -234,6 +234,7 @@ public class UserService {
         return feedbackServiceClient.getFeedbacks(userId,page,size);
     }
 
+
     public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO)
     {
         return feedbackServiceClient.createClientFeedback(clientFeedbackDTO);
@@ -247,5 +248,15 @@ public class UserService {
     public ClientFeedbackWithIdDTO changeFeedback (Long feedbackId,UpdateClientRateDTO updateClientRateDTO)
     {
         return feedbackServiceClient.changeFeedBack(feedbackId, updateClientRateDTO);
+    }
+
+    public Page<PaymentWithIdDTO> getAllPaymentsByUser (Long userId, int page,int size)
+    {
+        return paymentServiceClient.getAllPaymentsByUser(userId,page,size);
+    }
+
+    public PaymentWithIdDTO getPendingPaymentByUser(Long userId)
+    {
+        return paymentServiceClient.getPendingPaymentByUser(userId);
     }
 }

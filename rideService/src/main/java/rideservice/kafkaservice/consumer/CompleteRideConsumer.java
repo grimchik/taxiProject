@@ -16,7 +16,7 @@ public class CompleteRideConsumer {
         this.rideService = rideService;
     }
 
-    @KafkaListener(topics = "${kafka.topic.completeRideTopic=completeRideTopic}", containerFactory = "kafkaCompleteRideListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.topic.completeRideTopic}", containerFactory = "kafkaCompleteRideListenerContainerFactory")
     public void listenCancelRide(CompleteRideDTO message) {
         rideService.completeRide(message);
     }

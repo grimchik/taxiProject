@@ -61,7 +61,7 @@ public class PaymentController {
     }
 
     @GetMapping("/user-pending-payments/{userId}")
-    public ResponseEntity<?> getAllPaymentsByUser(@PathVariable("userId") Long userId)
+    public ResponseEntity<?> getPendingPaymentByUser(@PathVariable("userId") Long userId)
     {
         return new ResponseEntity<>(paymentService.getPaymentByUserAndStatusDefault(userId),HttpStatus.OK);
     }

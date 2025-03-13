@@ -121,6 +121,20 @@ public class UserController {
         return new ResponseEntity<>(userService.changeFeedback(feedbackId, updateClientRateDTO), HttpStatus.OK);
     }
 
+    @GetMapping("/payments/{userId}")
+    public ResponseEntity<?> getAllPaymentsByUser (@PathVariable("userId") Long userId,
+                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                   @RequestParam(value = "size", defaultValue = "5") Integer size)
+    {
+        return new ResponseEntity<>(userService.getAllPaymentsByUser(userId,page,size),HttpStatus.OK);
+    }
+
+    @GetMapping("/pending-payments/{userId}")
+    public ResponseEntity<?> getPendingPayment(@PathVariable("userId") Long userId)
+    {
+        return new ResponseEntity<>(userService.getPendingPaymentByUser(userId),HttpStatus.OK);
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //ADMIN METHODS
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
