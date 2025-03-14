@@ -72,7 +72,7 @@ public class UserService {
     @Transactional
     public void deleteUserById(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
-        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         User user = userOptional.get();
         checkIsDeleted(user.getIsDeleted());
         userRepository.softDeleteByUsername(user.getUsername());
@@ -86,7 +86,7 @@ public class UserService {
     }
     private User findActiveUserById(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
-        userOptional.orElseThrow(() -> new EntityExistsException("User not found"));
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         User user = userOptional.get();
         checkIsDeleted(user.getIsDeleted());
         return user;
@@ -167,17 +167,30 @@ public class UserService {
     }
 
     public Page<RideWithIdDTO> getRidesByUserId(Long userId, Integer page, Integer size) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         return rideServiceClient.getRides(userId, page, size);
     }
 
-    public RideWithIdDTO createRide(RideDTO rideDTO)
+    public RideWithIdDTO createRide(Long userId,RideDTO rideDTO)
     {
+        checkDeletedAndExists(userId);
+        rideDTO.setUserId(userId);
         return rideServiceClient.createRide(rideDTO);
     }
 
-    public RideWithIdDTO changeRide(Long rideId,UpdateRideDTO updateRideDTO)
+    public RideWithIdDTO changeRide(Long rideId,Long userId,UpdateRideDTO updateRideDTO)
     {
+        checkDeletedAndExists(userId);
+        updateRideDTO.setUserId(userId);
         return rideServiceClient.changeRide(rideId,updateRideDTO);
+    }
+
+    private void checkDeletedAndExists(Long userId)
+    {
+        User user =  userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        checkIsDeleted(user.getIsDeleted());
     }
 
     public CarWithIdDTO createCar (CarCreateDTO carCreateDTO)
@@ -232,17 +245,23 @@ public class UserService {
 
     public Page<ClientFeedbackWithIdDTO> getAllFeedbacks (Long userId, Integer page, Integer size)
     {
+        Optional<User> userOptional = userRepository.findById(userId);
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         return feedbackServiceClient.getFeedbacks(userId,page,size);
     }
 
 
-    public ClientFeedbackWithIdDTO createFeedback(ClientFeedbackDTO clientFeedbackDTO)
+    public ClientFeedbackWithIdDTO createFeedback(Long userId,ClientFeedbackDTO clientFeedbackDTO)
     {
+        checkDeletedAndExists(userId);
+        clientFeedbackDTO.setUserId(userId);
         return feedbackServiceClient.createClientFeedback(clientFeedbackDTO);
     }
 
     public RateDTO getUserRate(Long userId)
     {
+        Optional<User> userOptional = userRepository.findById(userId);
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         return feedbackServiceClient.getUserRate(userId);
     }
 
@@ -253,11 +272,15 @@ public class UserService {
 
     public Page<PaymentWithIdDTO> getAllPaymentsByUser (Long userId, int page,int size)
     {
+        Optional<User> userOptional = userRepository.findById(userId);
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         return paymentServiceClient.getAllPaymentsByUser(userId,page,size);
     }
 
     public PaymentWithIdDTO getPendingPaymentByUser(Long userId)
     {
+        Optional<User> userOptional = userRepository.findById(userId);
+        userOptional.orElseThrow(() -> new EntityNotFoundException("User not found"));
         return paymentServiceClient.getPendingPaymentByUser(userId);
     }
 

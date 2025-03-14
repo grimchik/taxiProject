@@ -164,25 +164,31 @@ public class DriverService {
 
     public Page<RideWithIdDTO> getCompletedRides (Long driverId,Integer page, Integer size)
     {
+        driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getCompletedRides(driverId,page,size);
     }
 
     public Page<DriverFeedbackWithIdDTO> getAllFeedbacks (Long driverId, Integer page, Integer size)
     {
+        driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return driverFeedbackServiceClient.getFeedbacks(driverId,page,size);
     }
 
     public RateDTO getDriverRate(Long driverId)
     {
+        driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return driverFeedbackServiceClient.getDriverRate(driverId);
     }
 
-    public DriverFeedbackWithIdDTO changeFeedback(Long feedbackId, UpdateDriverRateDTO updateDriverRateDTO) {
+    public DriverFeedbackWithIdDTO changeFeedback(Long driverId,Long feedbackId, UpdateDriverRateDTO updateDriverRateDTO) {
+        findActiveDriverById(driverId);
         return driverFeedbackServiceClient.changeFeedBack(feedbackId,updateDriverRateDTO);
     }
 
-    public DriverFeedbackWithIdDTO createFeedback(DriverFeedbackDTO driverFeedbackDTO)
+    public DriverFeedbackWithIdDTO createFeedback(Long driverId,DriverFeedbackDTO driverFeedbackDTO)
     {
+        findActiveDriverById(driverId);
+        driverFeedbackDTO.setDriverId(driverId);
         return driverFeedbackServiceClient.createDriverFeedback(driverFeedbackDTO);
     }
 
@@ -197,6 +203,7 @@ public class DriverService {
         Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
+        checkIsDeleted(driver.getIsDeleted());
         if (driverOptional.isPresent()) {
             throw new EntityExistsException("This car is already assigned to another driver.");
         }
@@ -241,9 +248,7 @@ public class DriverService {
 
     public RideWithIdDTO applyRide(Long rideId,Long driverId)
     {
-        Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
-
+        Driver driver = findActiveDriverById(driverId);
         if (driver.getCarId() == null)
         {
             throw new IllegalStateException("Driver has no assigned car.");
@@ -254,25 +259,30 @@ public class DriverService {
     }
 
     public void cancelRide(CanceledRideByDriverDTO canceledRideByDriverDTO) {
+        findActiveDriverById(canceledRideByDriverDTO.getDriverId());
         cancelRideByDriverProducer.sendCancelRequest(canceledRideByDriverDTO);
     }
 
     public void startRide(RideInProgressDTO rideInProgressDTO) {
+        findActiveDriverById(rideInProgressDTO.getDriverId());
         rideInProgressProducer.sendRideInProgressRequest(rideInProgressDTO);
     }
 
     public void finishRide(FinishRideDTO finishRideDTO)
     {
+        findActiveDriverById(finishRideDTO.getDriverId());
         finishRideProducer.sendFinishRequest(finishRideDTO);
     }
 
     public Page<RideWithIdDTO> getCompletedRidesPeriod(Long driverId, LocalDateTime start, LocalDateTime end, int page, int size)
     {
+        driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getCompletedRidesPeriod(driverId,start,end,page,size);
     }
 
     public EarningDTO getEarnings(Long driverId, LocalDateTime start, LocalDateTime end)
     {
+        driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getEarnings(driverId,start,end);
     }
 }

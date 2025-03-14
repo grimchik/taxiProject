@@ -60,13 +60,14 @@ public class DriverController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/create-feedback")
-    public ResponseEntity<?> createFeedback (@RequestBody DriverFeedbackDTO driverFeedbackDTO)
+    @PostMapping("/{driverId}/create-feedback")
+    public ResponseEntity<?> createFeedback (@PathVariable("driverId") Long driverId,
+                                             @RequestBody DriverFeedbackDTO driverFeedbackDTO)
     {
-        return new ResponseEntity<>(driverService.createFeedback(driverFeedbackDTO),HttpStatus.CREATED);
+        return new ResponseEntity<>(driverService.createFeedback(driverId,driverFeedbackDTO),HttpStatus.CREATED);
     }
 
-    @GetMapping("/driver-feedbacks/{driverId}")
+    @GetMapping("/{driverId}/driver-feedbacks")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("driverId") Long driverId,
                                               @RequestParam(value = "page", defaultValue = "0") Integer page,
                                               @RequestParam(value = "size", defaultValue = "5") Integer size)
@@ -74,17 +75,18 @@ public class DriverController {
         return new ResponseEntity<>(driverService.getAllFeedbacks(driverId,page,size),HttpStatus.OK);
     }
 
-    @GetMapping("/driver-rate/{driverId}")
+    @GetMapping("/{driverId}/driver-rate")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("driverId") Long driverId)
     {
         return new ResponseEntity<>(driverService.getDriverRate(driverId),HttpStatus.OK);
     }
 
-    @PatchMapping("/update-feedback/{feedbackId}")
-    public ResponseEntity<?> updateFeedback(@PathVariable("feedbackId") Long feedbackId,
+    @PatchMapping("/{driverId}/update-feedback/{feedbackId}")
+    public ResponseEntity<?> updateFeedback(@PathVariable("driverId") Long driverId,
+                                            @PathVariable("feedbackId") Long feedbackId,
                                             @RequestBody UpdateDriverRateDTO updateDriverRateDTO)
     {
-        return new ResponseEntity<>(driverService.changeFeedback(feedbackId, updateDriverRateDTO), HttpStatus.OK);
+        return new ResponseEntity<>(driverService.changeFeedback(driverId,feedbackId, updateDriverRateDTO), HttpStatus.OK);
     }
 
     @GetMapping("/available-rides")
@@ -94,7 +96,7 @@ public class DriverController {
         return new ResponseEntity<>(driverService.getAvailableRides(page,size),HttpStatus.OK);
     }
 
-    @GetMapping("/completed-rides/{driverId}")
+    @GetMapping("/{driverId}/completed-rides")
     public ResponseEntity<?> getCompletedRides (@PathVariable("driverId") Long  driverId,
                                                 @RequestParam(value = "page",defaultValue = "0") Integer page,
                                                 @RequestParam(value = "size",defaultValue = "5") Integer size)
@@ -102,27 +104,27 @@ public class DriverController {
         return new ResponseEntity<>(driverService.getCompletedRides(driverId,page,size),HttpStatus.OK);
     }
 
-    @PostMapping("{driverId}/assign-car/{carId}")
+    @PostMapping("/{driverId}/assign-car/{carId}")
     public ResponseEntity<?> assignCarToDriver(@PathVariable("driverId") Long  driverId,
                                                @PathVariable("carId") Long  carId)
     {
         return new ResponseEntity<>(driverService.assignCarToDriver(driverId,carId),HttpStatus.OK);
     }
 
-    @PostMapping("{driverId}/unassign-car/{carId}")
+    @PostMapping("/{driverId}/unassign-car/{carId}")
     public ResponseEntity<?> unassignCarFromDriver(@PathVariable("driverId") Long driverId,
                                                    @PathVariable("carId") Long carId) {
         return new ResponseEntity<>(driverService.unassignCarFromDriver(driverId, carId), HttpStatus.OK);
     }
 
-    @PostMapping("{driverId}/apply-ride/{rideId}")
+    @PostMapping("/{driverId}/apply-ride/{rideId}")
     public ResponseEntity<?> applyRide (@PathVariable("driverId") Long driverId,
                                         @PathVariable("rideId") Long rideId)
     {
         return new ResponseEntity<>(driverService.applyRide(rideId,driverId),HttpStatus.OK);
     }
 
-    @PostMapping("{driverId}/cancel-ride/{rideId}")
+    @PostMapping("/{driverId}/cancel-ride/{rideId}")
     public ResponseEntity<?> cancelRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -132,7 +134,7 @@ public class DriverController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping("{driverId}/start-ride/{rideId}")
+    @PostMapping("/{driverId}/start-ride/{rideId}")
     public ResponseEntity<?> startRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -142,7 +144,7 @@ public class DriverController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping("{driverId}/finish-ride/{rideId}")
+    @PostMapping("/{driverId}/finish-ride/{rideId}")
     public ResponseEntity<?> finishRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -152,7 +154,7 @@ public class DriverController {
         return ResponseEntity.accepted().build();
     }
 
-    @GetMapping("/completed-rides-period/{driverId}")
+    @GetMapping("/{driverId}/completed-rides-period")
     public ResponseEntity<?> getCompletedRidesPeriod(@PathVariable("driverId") Long driverId,
                                                      @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                      @RequestParam(value = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
@@ -162,7 +164,7 @@ public class DriverController {
         return new ResponseEntity<>(driverService.getCompletedRidesPeriod(driverId, start, end, page, size), HttpStatus.OK);
     }
 
-    @GetMapping("/earning/{driverId}")
+    @GetMapping("/{driverId}/earning")
     public ResponseEntity<?> getEarnings(
             @PathVariable("driverId") Long driverId,
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,

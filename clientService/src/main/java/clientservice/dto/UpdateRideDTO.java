@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateRideDTO {
-    @NotNull(message = "User id cannot be null")
     private Long userId;
     @Size(min = 2, message = "There must be at least two locations")
     @Valid

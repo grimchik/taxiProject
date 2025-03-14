@@ -57,9 +57,11 @@ public class UserController {
         return new ResponseEntity<>(userService.updateProfile(id, userDTO), HttpStatus.OK);
     }
 
-    @PostMapping("/create-ride")
-    public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO) {
-        return new ResponseEntity<>(userService.createRide(rideDTO), HttpStatus.CREATED);
+    @PostMapping("/create-ride/{userId}")
+    public ResponseEntity<?> createRide(@PathVariable("userId") Long userId,
+                                        @RequestBody RideDTO rideDTO)
+    {
+        return new ResponseEntity<>(userService.createRide(userId,rideDTO), HttpStatus.CREATED);
     }
 
     @GetMapping("/user-rides/{userId}")
@@ -70,11 +72,12 @@ public class UserController {
         return new ResponseEntity<>(userService.getRidesByUserId(userId, page, size), HttpStatus.OK);
     }
 
-    @PatchMapping("/update-ride/{id}")
-    public ResponseEntity<?> updateRide(@PathVariable("id") Long rideId,
+    @PatchMapping("{userId}/update-ride/{rideId}")
+    public ResponseEntity<?> updateRide(@PathVariable("userId") Long userId,
+                                        @PathVariable("rideId") Long rideId,
                                         @RequestBody UpdateRideDTO updateRideDTO)
     {
-        return new ResponseEntity<>(userService.changeRide(rideId, updateRideDTO), HttpStatus.OK);
+        return new ResponseEntity<>(userService.changeRide(rideId,userId,updateRideDTO), HttpStatus.OK);
     }
 
     @PostMapping("{userId}/cancel-ride/{rideId}")
@@ -94,13 +97,14 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/create-feedback")
-    public ResponseEntity<?> createFeedback (@RequestBody ClientFeedbackDTO clientFeedbackDTO)
+    @PostMapping("/{userId}/create-feedback")
+    public ResponseEntity<?> createFeedback (@PathVariable("userId") Long userId,
+                                             @RequestBody ClientFeedbackDTO clientFeedbackDTO)
     {
-        return new ResponseEntity<>(userService.createFeedback(clientFeedbackDTO),HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.createFeedback(userId,clientFeedbackDTO),HttpStatus.CREATED);
     }
 
-    @GetMapping("/user-feedbacks/{userId}")
+    @GetMapping("/{userId}/user-feedbacks")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("userId") Long userId,
                                               @RequestParam(value = "page", defaultValue = "0") Integer page,
                                               @RequestParam(value = "size", defaultValue = "5") Integer size)
@@ -108,7 +112,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllFeedbacks(userId,page,size),HttpStatus.OK);
     }
 
-    @GetMapping("/user-rate/{userId}")
+    @GetMapping("/{userId}/user-rate")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("userId") Long userId)
     {
         return new ResponseEntity<>(userService.getUserRate(userId),HttpStatus.OK);
@@ -121,7 +125,7 @@ public class UserController {
         return new ResponseEntity<>(userService.changeFeedback(feedbackId, updateClientRateDTO), HttpStatus.OK);
     }
 
-    @GetMapping("/payments/{userId}")
+    @GetMapping("/{userId}/payments")
     public ResponseEntity<?> getAllPaymentsByUser (@PathVariable("userId") Long userId,
                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                    @RequestParam(value = "size", defaultValue = "5") Integer size)
@@ -129,7 +133,7 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllPaymentsByUser(userId,page,size),HttpStatus.OK);
     }
 
-    @GetMapping("/pending-payments/{userId}")
+    @GetMapping("/{userId}/pending-payments")
     public ResponseEntity<?> getPendingPayment(@PathVariable("userId") Long userId)
     {
         return new ResponseEntity<>(userService.getPendingPaymentByUser(userId),HttpStatus.OK);
