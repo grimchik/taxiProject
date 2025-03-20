@@ -147,7 +147,7 @@ public class RideService {
     public RideWithIdDTO getRideById(Long id)
     {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
+        rideOptional.orElseThrow(() -> new EntityNotFoundException("Ride not found"));
         Ride ride = rideOptional.get();
         return rideWithIdMapper.toDTO(ride);
     }
