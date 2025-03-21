@@ -24,4 +24,10 @@ public class DriverFeedbackDTO {
     private Boolean cleanPassenger;
 
     private Boolean punctuality;
+
+    @NotNull(message = "Driver id cannot be null")
+    private Long driverId;
+
+    @NotNull(message = "Ride id cannot be null")
+    private Long rideId;
 }

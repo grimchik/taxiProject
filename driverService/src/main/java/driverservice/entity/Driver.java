@@ -34,5 +34,6 @@ public class Driver {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    //Add Entity Car
+    @Column(name = "car_id", nullable = true)
+    private Long carId;
 }

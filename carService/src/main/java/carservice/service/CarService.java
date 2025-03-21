@@ -28,7 +28,9 @@ public class CarService {
     public CarWithIdDTO createCar(CarDTO carDTO)
     {
         Optional<Car> carOptional=carRepository.findByNumber(carDTO.getNumber());
-        carOptional.orElseThrow(() -> new EntityExistsException("Car with " + carDTO.getNumber() + " already exists"));
+        if (carOptional.isPresent()) {
+            throw new EntityExistsException("Car with " + carDTO.getNumber() + " already exists");
+        }
         Car car = carMapper.toEntity(carDTO);
         carRepository.save(car);
         return carWithIdMapper.toDTO(car);
@@ -37,7 +39,7 @@ public class CarService {
     public CarWithIdDTO getCarById(Long id)
     {
         Optional<Car> carOptional = carRepository.findById(id);
-        carOptional.orElseThrow(() -> new EntityExistsException("Car not found"));
+        carOptional.orElseThrow(() -> new EntityNotFoundException("Car not found"));
         return carWithIdMapper.toDTO(carOptional.get());
     }
 
@@ -45,7 +47,7 @@ public class CarService {
     public void deleteCarById(Long id)
     {
         Optional<Car> carOptional = carRepository.findById(id);
-        carOptional.orElseThrow(() -> new EntityExistsException("Car not found"));
+        carOptional.orElseThrow(() -> new EntityNotFoundException("Car not found"));
         Car car = carOptional.get();
         carRepository.delete(car);
     }
@@ -62,7 +64,7 @@ public class CarService {
     public CarDTO updateCarById(Long id,CarDTO carDTO)
     {
         Optional<Car> carOptional = carRepository.findById(id);
-        carOptional.orElseThrow(() -> new EntityExistsException("Car not found"));
+        carOptional.orElseThrow(() -> new EntityNotFoundException("Car not found"));
         checkIfCarNumberExists(carOptional, carDTO.getNumber());
         Car car = carOptional.get();
         car.setDescription(carDTO.getDescription());
@@ -78,7 +80,7 @@ public class CarService {
     public CarWithIdDTO changeCar (Long id,UpdateCarDTO updateCarDTO)
     {
         Optional<Car> carOptional = carRepository.findById(id);
-        carOptional.orElseThrow(() -> new EntityExistsException("Car not found"));
+        carOptional.orElseThrow(() -> new EntityNotFoundException("Car not found"));
         Car car = carOptional.get();
         if(updateCarDTO.getNumber() != null)
         {

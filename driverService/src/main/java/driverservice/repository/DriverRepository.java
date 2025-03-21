@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface DriverRepository extends JpaRepository<Driver,Long> {
     Optional<Driver> findByUsername(String username);
     Optional<Driver> findByPhone(String phone);
+    Optional<Driver> findDriverByCarId(Long carId);
     List<Driver> findAllByIsDeletedFalse();
     @Modifying
     @Query("UPDATE Driver d SET d.isDeleted = true WHERE d.username = :username")

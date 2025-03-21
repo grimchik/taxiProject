@@ -1,6 +1,7 @@
 package rateservice.exceptionhandler;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 @Hidden
@@ -20,6 +22,20 @@ public class FeedbackExceptionHandler {
                 "Invalid values provided. Please check the input data.");
         problemDetail.setTitle("Data Integrity Violation");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<ProblemDetail> handleEntityExistException(EntityExistsException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problemDetail.setTitle("Exist Error");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ProblemDetail> handleResponseStatusException(ResponseStatusException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
+        problemDetail.setTitle("Feign Client Error");
+        return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

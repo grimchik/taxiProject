@@ -7,6 +7,5 @@ public enum Status {
     IN_PROGRESS,
     WAITING_PAYMENT,
     COMPLETED,
-    CANCELED_BY_USER,
-    CANCELED_BY_DRIVER
+    CANCELED_BY_USER
 }
