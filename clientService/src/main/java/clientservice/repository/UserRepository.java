@@ -18,5 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findAllByIsDeletedFalse();
     @Modifying
     @Query("UPDATE User u SET u.isDeleted = true WHERE u.username = :username")
+    @Transactional
     void softDeleteByUsername(@Param("username") String username);
 }
