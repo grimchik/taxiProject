@@ -104,7 +104,7 @@ public class RideService {
     @Transactional
     public RideWithIdDTO changeRide(Long id, UpdateRideDTO updateRideDTO) {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
+        rideOptional.orElseThrow(() -> new EntityNotFoundException("Ride not found"));
         Ride ride = rideOptional.get();
         if (!ride.getUserId().equals(updateRideDTO.getUserId()))
         {
@@ -139,7 +139,7 @@ public class RideService {
     public void deleteRideById(Long id)
     {
         Optional<Ride> rideOptional = rideRepository.findById(id);
-        rideOptional.orElseThrow(() -> new EntityExistsException("Ride not found"));
+        rideOptional.orElseThrow(() -> new EntityNotFoundException("Ride not found"));
         Ride ride = rideOptional.get();
         rideRepository.delete(ride);
     }
