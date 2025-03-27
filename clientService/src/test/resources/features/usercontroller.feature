@@ -1,6 +1,4 @@
 Feature: User Controller Component Tests
-  As an administrator of the user system
-  I want to ensure that the user endpoints work as expected
 
   Scenario: Successfully create a new user
     Given the following user details in JSON:
