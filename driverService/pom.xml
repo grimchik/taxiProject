@@ -154,7 +154,24 @@
       <artifactId>spring-cloud-starter-contract-verifier</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>7.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-spring</artifactId>
+      <version>7.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit</artifactId>
+      <version>7.11.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -184,7 +201,7 @@
             </execution>
           </executions>
           <configuration>
-            <baseClassForTests>clientfeedbackservice.BaseContractTest</baseClassForTests>
+            <baseClassForTests>driverservice.BaseContractTest</baseClassForTests>
           </configuration>
         </plugin>
         <plugin>
