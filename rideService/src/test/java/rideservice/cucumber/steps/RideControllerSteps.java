@@ -69,6 +69,25 @@ public class RideControllerSteps {
         Assertions.assertFalse(actualValue.isEmpty(), "Expected field " + field + " to be present in the response.");
     }
 
+    @Then("the response should contain {string} with {string}: {string}")
+    public void the_response_should_contain_with(String parentField, String childField, String expectedValue) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonResponse = mapper.readTree(response.getBody());
+
+        JsonNode locations = jsonResponse.path(parentField);
+        boolean found = false;
+
+        if (locations.isArray()) {
+            for (JsonNode location : locations) {
+                if (location.has(childField) && location.get(childField).asText().equals(expectedValue)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        Assertions.assertTrue(found, "Expected " + childField + " with value '" + expectedValue + "' in " + parentField);
+    }
+
     @Then("the response status should be {int}")
     public void the_response_status_should_be(Integer statusCode) {
         System.out.println(response.getBody());
