@@ -38,15 +38,17 @@ public class PaymentService {
         payment.setCardNumber(paymentDTO.getCardNumber());
         payment.setPaymentDate(LocalDateTime.now());
         payment.setPrice(paymentDTO.getPrice());
+        payment.setRideId(paymentDTO.getRideId());
+        payment.setUserId(paymentDTO.getUserId());
         paymentRepository.save(payment);
         return paymentWithIdMapper.toDTO(payment);
     }
 
-    public PaymentDTO getPayment(Long id)
+    public PaymentWithIdDTO getPayment(Long id)
     {
         Optional<Payment> paymentOptional = paymentRepository.findById(id);
         paymentOptional.orElseThrow(() -> new EntityNotFoundException("Payment not found"));
-        return paymentMapper.toDTO(paymentOptional.get());
+        return paymentWithIdMapper.toDTO(paymentOptional.get());
     }
 
     @Transactional

@@ -70,7 +70,7 @@ class PaymentServiceTest {
         when(paymentRepository.findById(paymentId)).thenReturn(Optional.of(payment));
         when(paymentMapper.toDTO(payment)).thenReturn(paymentDTO);
 
-        PaymentDTO result = paymentService.getPayment(paymentId);
+        PaymentWithIdDTO result = paymentService.getPayment(paymentId);
 
         assertNotNull(result);
         verify(paymentRepository, times(1)).findById(paymentId);
