@@ -189,11 +189,24 @@
         <scope>test</scope>
       </dependency>
     </dependencies>
+
   </dependencyManagement>
 
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.springframework.cloud</groupId>
+          <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+          <version>4.1.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>generateTests</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
