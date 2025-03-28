@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:taxitest;MODE=PostgreSQL;DATABASE_TO_UPPER=false
-    driver-class-name: org.h2.Driver
-    username: username
+    url: jdbc:postgresql://localhost:5432/taxitest
+    driver-class-name: org.postgresql.Driver
+    username: postgres
     password: password
   jpa:
     hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.H2Dialect
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     enabled: false

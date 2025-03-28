@@ -45,7 +45,7 @@ public class ClientServiceControllerTest {
     public void testSignUpUser() throws Exception {
         UserDTO userDTO = new UserDTO("Ivan", "password123", "+375333565900");
 
-        mockMvc.perform(post("/api/v1/users")
+        mockMvc.perform(post("/api/v1/users/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDTO)))
                 .andExpect(status().isCreated());
@@ -108,7 +108,7 @@ public class ClientServiceControllerTest {
         userRepository.save(user);
         userRepository.save(user1);
 
-        mockMvc.perform(get("/api/v1/users")
+        mockMvc.perform(get("/api/v1/users/")
                         .param("page", "0")
                         .param("size", "5"))
                 .andExpect(status().isOk())

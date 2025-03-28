@@ -60,6 +60,8 @@ public class PaymentControllerTest {
         updateDto.setPrice(175.0);
         updateDto.setPaymentType("CARD");
         updateDto.setCardNumber("5555-6666-7777-8888");
+        updateDto.setRideId(2L);
+        updateDto.setUserId(20L);
 
         mockMvc.perform(put("/api/v1/payments/{id}", saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
