@@ -167,8 +167,8 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-contract-verifier</artifactId>
-        <scope>test</scope>
         <version>4.1.0</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>io.cucumber</groupId>
