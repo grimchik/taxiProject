@@ -10,14 +10,15 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class CheckPromoCodeProducer {
-
+public class CheckPromoCodeProducer
+{
     private final KafkaTemplate<String, CheckPromoCodeDTO> kafkaTemplate;
 
     @Value("${kafka.topic.checkPromoCodeTopic}")
     private String checkPromoCodeTopic;
 
-    public CheckPromoCodeProducer(KafkaTemplate<String, CheckPromoCodeDTO> kafkaTemplate) {
+    public CheckPromoCodeProducer(KafkaTemplate<String, CheckPromoCodeDTO> kafkaTemplate)
+    {
         this.kafkaTemplate = kafkaTemplate;
     }
 
