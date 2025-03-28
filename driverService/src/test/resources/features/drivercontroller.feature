@@ -1,6 +1,4 @@
 Feature: Driver Controller Component Tests
-  As an administrator of the driver system
-  I want to ensure that the driver endpoints work as expected
 
   Scenario: Successfully create a new driver
     Given the following driver details in JSON:
