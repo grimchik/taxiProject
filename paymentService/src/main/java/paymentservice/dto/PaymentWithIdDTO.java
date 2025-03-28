@@ -20,4 +20,6 @@ public class PaymentWithIdDTO {
     private String paymentType;
     private LocalDateTime paymentDate;
     private String cardNumber;
+    private Long rideId;
+    private Long userId;
 }
