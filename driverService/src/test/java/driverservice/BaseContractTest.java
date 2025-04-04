@@ -1,4 +1,4 @@
-package clientfeedbackservice;
+package driverservice;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.BeforeEach;

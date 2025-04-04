@@ -169,11 +169,16 @@
       <artifactId>cucumber-junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
       <plugins>
-        <!--<plugin>
+        <plugin>
           <groupId>org.springframework.cloud</groupId>
           <artifactId>spring-cloud-contract-maven-plugin</artifactId>
           <version>4.1.0</version>
@@ -187,7 +192,7 @@
           <configuration>
             <baseClassForTests>rideservice.BaseContractTest</baseClassForTests>
           </configuration>
-        </plugin>-->
+        </plugin>
         <plugin>
           <groupId>org.liquibase</groupId>
           <artifactId>liquibase-maven-plugin</artifactId>

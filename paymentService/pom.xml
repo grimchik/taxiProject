@@ -169,6 +169,16 @@
       <artifactId>cucumber-junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -185,7 +195,7 @@
             <driver>org.postgresql.Driver</driver>
           </configuration>
         </plugin>
-       <!-- <plugin>
+       <plugin>
           <groupId>org.springframework.cloud</groupId>
           <artifactId>spring-cloud-contract-maven-plugin</artifactId>
           <version>4.1.0</version>
@@ -197,9 +207,9 @@
             </execution>
           </executions>
           <configuration>
-            <baseClassForTests>promocodeservice.BaseContractTest</baseClassForTests>
+            <baseClassForTests>paymentservice.BaseContractTest</baseClassForTests>
           </configuration>
-        </plugin>-->
+        </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>

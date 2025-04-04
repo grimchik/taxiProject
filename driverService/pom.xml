@@ -172,6 +172,11 @@
       <version>7.11.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -188,7 +193,7 @@
             <driver>org.postgresql.Driver</driver>
           </configuration>
         </plugin>
-        <!--<plugin>
+        <plugin>
           <groupId>org.springframework.cloud</groupId>
           <artifactId>spring-cloud-contract-maven-plugin</artifactId>
           <version>4.1.0</version>
@@ -202,7 +207,7 @@
           <configuration>
             <baseClassForTests>driverservice.BaseContractTest</baseClassForTests>
           </configuration>
-        </plugin>-->
+        </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
