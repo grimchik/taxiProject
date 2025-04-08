@@ -158,7 +158,7 @@ public class UserController {
     public ResponseEntity<?> getAllCars(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                         @RequestParam(value = "size", defaultValue = "5") Integer size)
     {
-        return new ResponseEntity<>(userService.getAllCars(PageRequest.of(page, size)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllCars(page, size), HttpStatus.OK);
     }
 
     @PostMapping("/create-car")

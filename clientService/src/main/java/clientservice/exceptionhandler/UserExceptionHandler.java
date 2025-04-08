@@ -2,6 +2,7 @@ package clientservice.exceptionhandler;
 
 import clientservice.exception.KafkaSendException;
 import clientservice.exception.SamePasswordException;
+import clientservice.exception.ServiceUnavailableException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,6 +36,14 @@ public class UserExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,ex.getMessage());
         problemDetail.setTitle("Exist error");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problemDetail);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleServiceUnavailableException(ServiceUnavailableException ex)
+    {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,ex.getMessage());
+        problemDetail.setTitle("Service Temporarily Unavailable");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(problemDetail);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
