@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@FeignClient(name = "rideservice", url = "http://localhost:8080/api/v1/rides", configuration = FeignConfiguration.class)
+@FeignClient(name = "rideservice", url= "http://apigateway:8080/api/v1/rides", configuration = FeignConfiguration.class)
 public interface RideServiceClient {
 
     @Retry(name = "rideServiceRetry", fallbackMethod = "getAvailableRidesFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "getAvailableRidesFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @GetMapping("/api/v1/rides/available-rides")
+    @GetMapping("/available-rides")
     Page<RideWithIdDTO> getAvailableRides(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "5") Integer size
@@ -29,7 +29,7 @@ public interface RideServiceClient {
     @Retry(name = "rideServiceRetry", fallbackMethod = "getCompletedRidesFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "getCompletedRidesFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @GetMapping("/api/v1/rides/completed-rides/{driverId}")
+    @GetMapping("/completed-rides/{driverId}")
     Page<RideWithIdDTO> getCompletedRides(@PathVariable("driverId") Long driverId,
                                           @RequestParam(value = "page", defaultValue = "0") Integer page,
                                           @RequestParam(value = "size", defaultValue = "5") Integer size
@@ -38,20 +38,20 @@ public interface RideServiceClient {
     @Retry(name = "rideServiceRetry", fallbackMethod = "getActiveRideFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "getActiveRideFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @GetMapping("/api/v1/rides/active-ride/{driverId}")
+    @GetMapping("/active-ride/{driverId}")
     RideWithIdDTO getActiveRide(@PathVariable("driverId") Long driverId);
 
     @Retry(name = "rideServiceRetry", fallbackMethod = "applyRideFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "applyRideFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @PostMapping("/api/v1/rides/apply-ride/{rideId}")
+    @PostMapping("/apply-ride/{rideId}")
     RideWithIdDTO applyRide (@PathVariable("rideId") Long rideId,
                              @RequestBody CarAndDriverIdDTO carAndDriverIdDTO);
 
     @Retry(name = "rideServiceRetry", fallbackMethod = "getCompletedRidesPeriodFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "getCompletedRidesPeriodFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @GetMapping("/api/v1/rides/completed-rides-period/{driverId}")
+    @GetMapping("/completed-rides-period/{driverId}")
     Page<RideWithIdDTO> getCompletedRidesPeriod(@PathVariable("driverId") Long driverId,
                                                 @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                 @RequestParam(value = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
@@ -62,7 +62,7 @@ public interface RideServiceClient {
     @Retry(name = "rideServiceRetry", fallbackMethod = "getEarningsFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "getEarningsFallback")
     @RateLimiter(name = "rideServiceRateLimiter")
-    @GetMapping("/api/v1/rides/earning/{driverId}")
+    @GetMapping("/earning/{driverId}")
     EarningDTO getEarnings(
             @PathVariable("driverId") Long driverId,
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,

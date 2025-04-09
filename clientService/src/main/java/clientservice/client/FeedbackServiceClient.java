@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "rateservice", url = "http://localhost:8080/api/v1/client-feedbacks/", configuration = FeignConfiguration.class)
+@FeignClient(name = "rateservice", url= "http://apigateway:8080/api/v1/client-feedbacks", configuration = FeignConfiguration.class)
 public interface FeedbackServiceClient {
     @Retry(name = "feedbackServiceRetry", fallbackMethod = "createClientFeedbackFallback")
     @CircuitBreaker(name = "feedbackServiceCircuitBreaker", fallbackMethod = "createClientFeedbackFallback")

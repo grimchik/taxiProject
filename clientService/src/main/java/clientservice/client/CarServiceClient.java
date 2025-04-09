@@ -11,33 +11,34 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "carservice", url = "http://localhost:8080/api/v1/cars",configuration = FeignConfiguration.class)
+@FeignClient(name = "carservice",url= "http://apigateway:8080/api/v1/cars", configuration = FeignConfiguration.class)
 public interface CarServiceClient {
     @Retry(name = "carServiceRetry", fallbackMethod = "getAllCarsFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "getAllCarsFallback")
     @RateLimiter(name = "carServiceRateLimiter")
-    @GetMapping("/api/v1/cars/")
-    Page<CarWithIdDTO> getAllCars(Pageable pageable);
+    @GetMapping("/")
+    Page<CarWithIdDTO> getAllCars(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                  @RequestParam(value = "size", defaultValue = "5") Integer size);
 
     @Retry(name = "carServiceRetry", fallbackMethod = "createCarFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "createCarFallback")
     @RateLimiter(name = "carServiceRateLimiter")
-    @PostMapping("/api/v1/cars/")
+    @PostMapping("/")
     CarWithIdDTO createCar(@RequestBody CarCreateDTO request);
 
     @Retry(name = "carServiceRetry", fallbackMethod = "changeCarFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "changeCarFallback")
     @RateLimiter(name = "carServiceRateLimiter")
-    @RequestMapping(value = "/api/v1/cars/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     CarWithIdDTO changeCar(@PathVariable("id") Long carId, @RequestBody UpdateCarDTO updateCarDTO);
 
     @Retry(name = "carServiceRetry", fallbackMethod = "deleteCarFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "deleteCarFallback")
     @RateLimiter(name = "carServiceRateLimiter")
-    @DeleteMapping("/api/v1/cars/{id}")
+    @DeleteMapping("/{id}")
     void deleteCar(@PathVariable("id") Long carId);
 
-    default Page<CarWithIdDTO> getAllCarsFallback(Pageable pageable, Throwable t) {
+    default Page<CarWithIdDTO> getAllCarsFallback(Integer page, Integer size, Throwable t) {
         throw new ServiceUnavailableException("Car service is currently unavailable");
     }
 
