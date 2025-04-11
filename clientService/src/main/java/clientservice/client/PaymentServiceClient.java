@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "paymentservice", url= "http://apigateway:8080/api/v1/payments", configuration = FeignConfiguration.class)
+@FeignClient(name = "paymentservice", url= "http://paymentservice:8091/api/v1/payments", configuration = FeignConfiguration.class)
 public interface PaymentServiceClient {
 
     @Retry(name = "paymentServiceRetry",fallbackMethod = "getAllPaymentsByUserFallback")

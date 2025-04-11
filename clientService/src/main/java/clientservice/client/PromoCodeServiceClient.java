@@ -10,7 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "promocodeservice",  url= "http://apigateway:8080/api/v1/promocodes", configuration = FeignConfiguration.class)
+@FeignClient(name = "promocodeservice",  url= "http://promocodeservice:8090/api/v1/promocodes", configuration = FeignConfiguration.class)
 public interface PromoCodeServiceClient {
 
     @Retry(name = "promoCodeServiceRetry",fallbackMethod = "getAllPromoCodesFallback")

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "carservice",url= "http://apigateway:8080/api/v1/cars", configuration = FeignConfiguration.class)
+@FeignClient(name = "carservice",url= "http://carservice:8083/api/v1/cars", configuration = FeignConfiguration.class)
 public interface CarServiceClient {
     @Retry(name = "carServiceRetry", fallbackMethod = "getAllCarsFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "getAllCarsFallback")

@@ -13,7 +13,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "rateservice", url= "http://apigateway:8080/api/v1/driver-feedbacks", configuration = FeignConfiguration.class)
+@FeignClient(name = "rateservice", url= "http://rateservice:8085/api/v1/driver-feedbacks", configuration = FeignConfiguration.class)
 public interface DriverFeedbackServiceClient {
     @Retry(name = "driverFeedbackServiceCircuitBreaker", fallbackMethod = "createDriverFeedbackFallback")
     @CircuitBreaker(name = "driverFeedbackServiceCircuitBreaker", fallbackMethod = "createDriverFeedbackFallback")

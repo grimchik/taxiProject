@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "rideservice", url= "http://apigateway:8080/api/v1/rides",configuration = FeignConfiguration.class)
+@FeignClient(name = "rideservice", url= "http://rideservice:8084/api/v1/rides",configuration = FeignConfiguration.class)
 public interface RideServiceClient {
     @Retry(name = "rideServiceRetry",fallbackMethod = "createRideFallback")
     @CircuitBreaker(name = "rideServiceCircuitBreaker", fallbackMethod = "createRideFallback")

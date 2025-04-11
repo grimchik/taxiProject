@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
-@FeignClient(name = "rideservice", url= "http://apigateway:8080/api/v1/rides", configuration = FeignConfiguration.class)
+@FeignClient(name = "rideservice", url= "http://rideservice:8084/api/v1/rides", configuration = FeignConfiguration.class)
 public interface RideServiceClient {
 
     @Retry(name = "rideServiceRetry", fallbackMethod = "getAvailableRidesFallback")
