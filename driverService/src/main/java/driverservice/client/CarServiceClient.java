@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @FeignClient(name = "car-service", url = "http://localhost:8080/api/v1/cars", configuration = FeignConfiguration.class)
-public interface CarServiceClient {
+public interface CarServiceClient
+{
     @GetMapping("/{id}")
     CarWithIdDTO getCarById(@PathVariable("id") Long id);
 }

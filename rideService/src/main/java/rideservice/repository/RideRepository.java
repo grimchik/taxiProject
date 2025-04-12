@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride,Long> {
-    List<Ride> findByStatus(Status status);
+    List<Ride> findByStatus(String status);
     Page<Ride> findAllByUserId(Long userId, Pageable pageable);
     Page<Ride> findAllByDriverId(Long driverId, Pageable pageable);
     Optional<Ride> findByUserIdAndStatusIn(Long userId, List<String> statuses);

@@ -36,4 +36,8 @@ public class PaymentDTO
         }
         return true;
     }
+    @NotNull(message = "rideId cannot be null")
+    private Long rideId;
+    @NotNull(message = "UserId cannot be null")
+    private Long userId;
 }
