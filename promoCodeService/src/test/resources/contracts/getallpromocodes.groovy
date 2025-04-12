@@ -4,11 +4,10 @@ Contract.make {
     description "Get All Promo Codes with pagination"
     request {
         method 'GET'
-        urlPath '/api/v1/promocodes/'
-        {
+        urlPath('/api/v1/promocodes') {
             queryParameters {
-                parameter "page": "0"
-                parameter "size": "5"
+                parameter 'page': $(consumer(regex('[0-9]+')), producer(0))
+                parameter 'size': $(consumer(regex('[0-9]+')), producer(5))
             }
         }
     }

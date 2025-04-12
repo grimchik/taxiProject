@@ -60,7 +60,6 @@ class UserServiceTest {
 
         UserWithIdDTO userWithIdDTO = new UserWithIdDTO();
 
-        // Настраиваем моки
         when(userRepository.findByUsername(userDTO.getUsername())).thenReturn(Optional.empty());
         when(userRepository.findByPhone(userDTO.getPhone())).thenReturn(Optional.empty());
         when(userMapper.toEntity(userDTO)).thenReturn(user);
