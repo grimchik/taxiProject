@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
-
 @RestController
 @RequestMapping("/api/v1/users/")
 public class UserController {
@@ -158,7 +157,7 @@ public class UserController {
     public ResponseEntity<?> getAllCars(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                         @RequestParam(value = "size", defaultValue = "5") Integer size)
     {
-        return new ResponseEntity<>(userService.getAllCars(PageRequest.of(page, size)), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllCars(page, size), HttpStatus.OK);
     }
 
     @PostMapping("/create-car")

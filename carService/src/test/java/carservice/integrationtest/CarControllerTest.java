@@ -31,10 +31,6 @@ public class CarControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    public void setup() {
-    }
-
     @Test
     public void testCreateCar() throws Exception {
         CarDTO carDTO = new CarDTO();

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert -f docker-compose.yml
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: driverservice
+  name: driverservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: driverservice
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert -f docker-compose.yml
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: driverservice
+    spec:
+      containers:
+        - env:
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: http://eurekaserver:8761/eureka/
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: password
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/taxiproject
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka:9092
+            - name: SPRING_MVC_TIMEZONE
+              value: Europe/Minsk
+          image: parent-project-driverservice:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - --silent
+                - --fail
+                - http://localhost:8082/
+            failureThreshold: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: driver-service
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+      restartPolicy: Always

@@ -208,9 +208,9 @@ public class UserService {
         carServiceClient.deleteCar(carId);
     }
 
-    public Page<CarWithIdDTO> getAllCars (Pageable pageable)
+    public Page<CarWithIdDTO> getAllCars ( Integer page, Integer size)
     {
-        return carServiceClient.getAllCars(pageable);
+        return carServiceClient.getAllCars(page,size);
     }
 
     public PromoCodeWithIdDTO createPromoCode (PromoCodeDTO promoCodeDTO)

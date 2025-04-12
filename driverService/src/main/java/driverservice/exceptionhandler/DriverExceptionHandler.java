@@ -2,6 +2,7 @@ package driverservice.exceptionhandler;
 
 import driverservice.exception.KafkaSendException;
 import driverservice.exception.SamePasswordException;
+import driverservice.exception.ServiceUnavailableException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +32,14 @@ public class DriverExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         problemDetail.setTitle("Internal Server Error");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleServiceUnavailableException(ServiceUnavailableException ex)
+    {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,ex.getMessage());
+        problemDetail.setTitle("Service Temporarily Unavailable");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(problemDetail);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

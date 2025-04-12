@@ -169,10 +169,19 @@
       <artifactId>cucumber-junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-contract-spec</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
         <plugin>
           <groupId>org.liquibase</groupId>
@@ -186,7 +195,7 @@
             <driver>org.postgresql.Driver</driver>
           </configuration>
         </plugin>
-        <plugin>
+       <plugin>
           <groupId>org.springframework.cloud</groupId>
           <artifactId>spring-cloud-contract-maven-plugin</artifactId>
           <version>4.1.0</version>
@@ -198,12 +207,22 @@
             </execution>
           </executions>
           <configuration>
-            <baseClassForTests>promocodeservice.BaseContractTest</baseClassForTests>
+            <baseClassForTests>paymentservice.BaseContractTest</baseClassForTests>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>repackage</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <mainClass>paymentservice.PaymentServiceApplication</mainClass>
+          </configuration>
         </plugin>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
@@ -223,10 +242,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>3.3.0</version>
         </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.4.2</version>
-        </plugin>
+
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>3.1.2</version>
@@ -245,6 +261,5 @@
           <version>3.6.1</version>
         </plugin>
       </plugins>
-    </pluginManagement>
   </build>
 </project>
