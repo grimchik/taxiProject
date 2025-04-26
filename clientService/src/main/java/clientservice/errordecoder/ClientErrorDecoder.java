@@ -33,6 +33,6 @@ public class ClientErrorDecoder implements ErrorDecoder {
             message = "Failed to read error response body";
         }
 
-        return new RuntimeException("Feign error (" + status + "): " + message);
+        return new ResponseStatusException(status, message);
     }
 }

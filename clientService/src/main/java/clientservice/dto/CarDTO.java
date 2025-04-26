@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarCreateDTO {
+public class CarDTO {
     @NotBlank(message = "brand cannot be empty")
     private String brand;
     @NotBlank(message = "model cannot be empty")

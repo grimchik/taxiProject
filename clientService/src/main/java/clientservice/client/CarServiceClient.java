@@ -8,8 +8,9 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "carservice",url= "http://carservice:8083/api/v1/cars", configuration = FeignConfiguration.class)
 public interface CarServiceClient {
@@ -24,7 +25,7 @@ public interface CarServiceClient {
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "createCarFallback")
     @RateLimiter(name = "carServiceRateLimiter")
     @PostMapping("/")
-    CarWithIdDTO createCar(@RequestBody CarCreateDTO request);
+    CarWithIdDTO createCar(@RequestBody CarDTO request);
 
     @Retry(name = "carServiceRetry", fallbackMethod = "changeCarFallback")
     @CircuitBreaker(name = "carServiceCircuitBreaker", fallbackMethod = "changeCarFallback")
@@ -39,18 +40,43 @@ public interface CarServiceClient {
     void deleteCar(@PathVariable("id") Long carId);
 
     default Page<CarWithIdDTO> getAllCarsFallback(Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+            int status = rse.getStatusCode().value();
+            if (status == 400 || status == 404 || status == 409) {
+                throw rse;
+            }
+        }
         throw new ServiceUnavailableException("Car service is currently unavailable");
     }
 
-    default CarWithIdDTO createCarFallback(CarCreateDTO request, Throwable t) {
+    default CarWithIdDTO createCarFallback(CarDTO request, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+            int status = rse.getStatusCode().value();
+            if (status == 400 || status == 404 || status == 409) {
+                throw rse;
+            }
+        }
         throw new ServiceUnavailableException("Car service is currently unavailable. Cannot create car");
     }
 
     default CarWithIdDTO changeCarFallback(Long carId, UpdateCarDTO updateCarDTO, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+            int status = rse.getStatusCode().value();
+            if (status == 400 || status == 404 || status == 409) {
+                throw rse;
+            }
+        }
         throw new ServiceUnavailableException("Car service is currently unavailable. Cannot update car");
     }
 
     default void deleteCarFallback(Long carId, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+            int status = rse.getStatusCode().value();
+            if (status == 400 || status == 404 || status == 409) {
+                throw rse;
+            }
+        }
+
         throw new ServiceUnavailableException("Car service is currently unavailable. Cannot delete car");
     }
 }

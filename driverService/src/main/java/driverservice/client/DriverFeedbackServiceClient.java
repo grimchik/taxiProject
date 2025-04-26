@@ -12,6 +12,8 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "rateservice", url= "http://rateservice:8085/api/v1/driver-feedbacks", configuration = FeignConfiguration.class)
 public interface DriverFeedbackServiceClient {
@@ -43,18 +45,46 @@ public interface DriverFeedbackServiceClient {
                                            @RequestBody UpdateDriverRateDTO updateDriverRateDTO);
 
     default DriverFeedbackWithIdDTO createDriverFeedbackFallback(DriverFeedbackDTO request, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Feedback service is unavailable. Cannot create driver feedback.");
     }
 
     default Page<DriverFeedbackWithIdDTO> getFeedbacksFallback(Long driverId, Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Feedback service is unavailable. Cannot fetch feedbacks for driver ID " + driverId);
     }
 
     default RateDTO getDriverRateFallback(Long driverId, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Feedback service is unavailable. Cannot get rate for driver ID " + driverId);
     }
 
     default DriverFeedbackWithIdDTO changeFeedBackFallback(Long driverFeedbackId, UpdateDriverRateDTO updateDriverRateDTO, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Feedback service is unavailable. Cannot update feedback with ID " + driverFeedbackId);
     }
 

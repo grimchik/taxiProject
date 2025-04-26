@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "rideservice", url= "http://rideservice:8084/api/v1/rides", configuration = FeignConfiguration.class)
 public interface RideServiceClient {
@@ -70,26 +72,68 @@ public interface RideServiceClient {
     );
 
     default Page<RideWithIdDTO> getAvailableRidesFallback(Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot fetch available rides.");
     }
 
     default Page<RideWithIdDTO> getCompletedRidesFallback(Long driverId, Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot fetch completed rides for driver ID " + driverId);
     }
 
     default RideWithIdDTO getActiveRideFallback(Long driverId, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot fetch active ride for driver ID " + driverId);
     }
 
     default RideWithIdDTO applyRideFallback(Long rideId, CarAndDriverIdDTO carAndDriverIdDTO, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot apply ride with ID " + rideId);
     }
 
     default Page<RideWithIdDTO> getCompletedRidesPeriodFallback(Long driverId, LocalDateTime start, LocalDateTime end, Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot fetch completed rides for driver ID " + driverId + " in the period from " + start + " to " + end);
     }
 
     default EarningDTO getEarningsFallback(Long driverId, LocalDateTime start, LocalDateTime end, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot fetch earnings for driver ID " + driverId + " in the period from " + start + " to " + end);
     }
 }

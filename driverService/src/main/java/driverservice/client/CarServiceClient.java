@@ -9,6 +9,7 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "carservice",url= "http://carservice:8083/api/v1/cars", configuration = FeignConfiguration.class)
 public interface CarServiceClient {
@@ -19,6 +20,12 @@ public interface CarServiceClient {
     CarWithIdDTO getCarById(@PathVariable("id") Long id);
 
     default CarWithIdDTO getCarByIdFallback(Long id, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+            int status = rse.getStatusCode().value();
+            if (status == 400 || status == 404 || status == 409) {
+                throw rse;
+            }
+        }
         throw new ServiceUnavailableException("Car service is unavailable. Cannot retrieve car with ID " + id);
     }
 

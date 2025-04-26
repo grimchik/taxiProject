@@ -1,0 +1,29 @@
+<configuration>
+
+    <appender name="ELASTICSEARCH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>logstash:5000</destination>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app_name":"paymentservice"}</customFields>
+
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <level>level</level>
+                <thread>thread</thread>
+                <logger>logger</logger>
+                <message>message</message>
+                <mdc>mdc</mdc>
+            </fieldNames>
+
+            <includedMdcKeys>
+                <includedMdcKey>traceId</includedMdcKey>
+                <includedMdcKey>spanId</includedMdcKey>
+            </includedMdcKeys>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ELASTICSEARCH"/>
+    </root>
+
+</configuration>

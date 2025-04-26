@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "paymentservice", url= "http://paymentservice:8091/api/v1/payments", configuration = FeignConfiguration.class)
 public interface PaymentServiceClient {
@@ -34,14 +36,35 @@ public interface PaymentServiceClient {
                                       @Valid @RequestBody ConfirmedPaymentDTO confirmedPaymentDTO);
 
     default Page<PaymentWithIdDTO> getAllPaymentsByUserFallback(Long userId, Integer page, Integer size, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Payment service is unavailable. Cannot fetch payments for user " + userId);
     }
 
     default PaymentWithIdDTO getPendingPaymentByUserFallback(Long userId, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Payment service is unavailable. Cannot get pending payment for user " + userId);
     }
 
     default PaymentWithIdDTO confirmedPaymentFallback(Long userId, Long paymentId, ConfirmedPaymentDTO confirmedPaymentDTO, Throwable t) {
+        if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Payment service is unavailable. Cannot confirm payment with ID " + paymentId + " for user " + userId);
     }
 

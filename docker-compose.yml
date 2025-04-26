@@ -298,9 +298,87 @@ services:
       retries: 5
       timeout: 5s
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - mynetwork
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  elasticsearch:
+    image: bitnami/elasticsearch:latest
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - mynetwork
+    volumes:
+      - elasticsearch-data:/bitnami/elasticsearch
+    healthcheck:
+      test: [ "CMD", "curl", "--silent", "--fail", "http://localhost:9200" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  logstash:
+    image: bitnami/logstash:latest
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "5044:5044"
+    networks:
+      - mynetwork
+    volumes:
+      - ./logstash.conf:/bitnami/logstash/pipeline/logstash.conf
+
+  kibana:
+    image: bitnami/kibana:latest
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "5601:5601"
+    networks:
+      - mynetwork
+    depends_on:
+      - elasticsearch
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - mynetwork
+    volumes:
+       - grafana-storage:/var/lib/grafana
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - mynetwork
+
 networks:
   mynetwork:
     driver: bridge
 
 volumes:
   pg_data:
+  elasticsearch-data:
+  grafana-storage:

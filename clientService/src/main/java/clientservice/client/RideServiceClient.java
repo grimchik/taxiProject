@@ -8,6 +8,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @FeignClient(name = "rideservice", url= "http://rideservice:8084/api/v1/rides",configuration = FeignConfiguration.class)
 public interface RideServiceClient {
@@ -33,14 +35,35 @@ public interface RideServiceClient {
     );
 
     default RideWithIdDTO createRideFallback(RideDTO request, Throwable t) {
+       if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot create a ride.");
     }
 
     default Page<RideWithIdDTO> getRidesFallback(Long userId, Integer page, Integer size, Throwable t) {
+       if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot get rides for user ID " + userId);
     }
 
     default RideWithIdDTO changeRideFallback(Long rideId, UpdateRideDTO updateRideDTO, Throwable t) {
+       if (t instanceof ResponseStatusException rse) {
+    int status = rse.getStatusCode().value();
+    if (status == 400 || status == 404 || status == 409) {
+        throw rse;
+    }
+}
+
         throw new ServiceUnavailableException("Ride service is unavailable. Cannot update ride with ID " + rideId);
     }
 }
