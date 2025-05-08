@@ -1,5 +1,6 @@
 package driverservice.exceptionhandler;
 
+import driverservice.exception.DriverAuthenticationException;
 import driverservice.exception.KafkaSendException;
 import driverservice.exception.SamePasswordException;
 import driverservice.exception.ServiceUnavailableException;
@@ -108,6 +109,15 @@ public class DriverExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
         problemDetail.setTitle("Feign Client Error");
         return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
+    }
+
+    @ExceptionHandler(DriverAuthenticationException.class)
+    public ResponseEntity<ProblemDetail> handleDriverAuthenticationException(DriverAuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Authentication Error");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)

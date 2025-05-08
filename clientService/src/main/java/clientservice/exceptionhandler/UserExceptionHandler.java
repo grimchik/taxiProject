@@ -3,6 +3,7 @@ package clientservice.exceptionhandler;
 import clientservice.exception.KafkaSendException;
 import clientservice.exception.SamePasswordException;
 import clientservice.exception.ServiceUnavailableException;
+import clientservice.exception.UserAuthenticationException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -112,6 +113,15 @@ public class UserExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
         problemDetail.setTitle("Feign Client Error");
         return ResponseEntity.status(ex.getStatusCode()).body(problemDetail);
+    }
+
+    @ExceptionHandler(UserAuthenticationException.class)
+    public ResponseEntity<ProblemDetail> handleDriverAuthenticationException(UserAuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problemDetail.setTitle("Authentication Error");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)

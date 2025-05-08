@@ -28,6 +28,13 @@ public class UserController {
         return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser( @Valid @RequestBody AuthDTO authDTO)
+    {
+        log.info("POST /users/login - Login driver : {}", authDTO.getUsername());
+        return new ResponseEntity<>(userService.loginUser(authDTO),HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUserById(@PathVariable("id") Long id) {
         log.info("DELETE /users - Deleting user with ID: {}", id);

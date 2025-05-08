@@ -45,11 +45,13 @@ public class UserService {
     private final FeedbackServiceClient feedbackServiceClient;
     private final PaymentServiceClient paymentServiceClient;
 
+    private final KeycloakUserService keycloakUserService;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        RideServiceClient rideServiceClient,CancelRideProducer cancelRideProducer,
                        CarServiceClient carServiceClient,PromoCodeServiceClient promoCodeServiceClient,
                        CheckPromoCodeProducer checkPromoCodeProducer,FeedbackServiceClient feedbackServiceClient,
-                       PaymentServiceClient paymentServiceClient) {
+                       PaymentServiceClient paymentServiceClient,KeycloakUserService keycloakUserService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient=rideServiceClient;
@@ -59,6 +61,7 @@ public class UserService {
         this.checkPromoCodeProducer=checkPromoCodeProducer;
         this.feedbackServiceClient=feedbackServiceClient;
         this.paymentServiceClient=paymentServiceClient;
+        this.keycloakUserService = keycloakUserService;
     }
 
     public UserWithIdDTO createUser(UserDTO userDTO) throws EntityExistsException {
@@ -69,10 +72,19 @@ public class UserService {
         if (userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
             throw new EntityExistsException("User with the same phone already exists");
         }
+
+        String keycloakId = keycloakUserService.registerUser(userDTO);
+        log.info("User registered in Keycloak with ID: {}", keycloakId);
+
         User user = userMapper.toEntity(userDTO);
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         userRepository.save(user);
         return userWithIdMapper.toDTO(user);
+    }
+
+    public TokenResponseDTO loginUser (AuthDTO authDTO)
+    {
+        return keycloakUserService.loginUser(authDTO);
     }
 
     @Transactional

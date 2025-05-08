@@ -47,6 +47,13 @@ public class DriverController {
         return new ResponseEntity<>(driverService.createDriver(driverDTO),HttpStatus.CREATED);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> loginDriver( @Valid @RequestBody AuthDTO authDTO)
+    {
+        log.info("POST /drivers/login - Login driver : {}", authDTO.getUsername());
+        return new ResponseEntity<>(driverService.loginDriver(authDTO),HttpStatus.OK);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable("id") Long id,@Valid @RequestBody DriverDTO driverDTO)
     {

@@ -45,10 +45,14 @@ public class DriverService {
     private final CancelRideByDriverProducer cancelRideByDriverProducer;
     private final RideInProgressProducer rideInProgressProducer;
     private final FinishRideProducer finishRideProducer;
+
+    private final KeycloakDriverService keycloakDriverService;
+
     public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder,
                          RideServiceClient rideServiceClient, DriverFeedbackServiceClient driverFeedbackServiceClient,
                          CarServiceClient carServiceClient,CancelRideByDriverProducer cancelRideByDriverProducer,
-                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer) {
+                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer,
+                         KeycloakDriverService keycloakDriverService) {
         this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient = rideServiceClient;
@@ -57,6 +61,7 @@ public class DriverService {
         this.cancelRideByDriverProducer=cancelRideByDriverProducer;
         this.rideInProgressProducer=rideInProgressProducer;
         this.finishRideProducer=finishRideProducer;
+        this.keycloakDriverService=keycloakDriverService;
     }
 
     public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
@@ -68,10 +73,18 @@ public class DriverService {
         if (driverRepository.findByPhone(driverDTO.getPhone()).isPresent()) {
             throw new EntityExistsException("Driver with the same phone already exists");
         }
+        String keycloakId = keycloakDriverService.registerDriver(driverDTO);
+        log.info("User registered in Keycloak with ID: {}", keycloakId);
+
         Driver driver = driverMapper.toEntity(driverDTO);
         driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
         driverRepository.save(driver);
         return driverWithIdMapper.toDTO(driver);
+    }
+
+    public TokenResponseDTO loginDriver (AuthDTO authDTO)
+    {
+        return keycloakDriverService.loginDriver(authDTO);
     }
 
     @Transactional
