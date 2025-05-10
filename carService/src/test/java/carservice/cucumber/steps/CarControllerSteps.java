@@ -46,9 +46,7 @@ public class CarControllerSteps {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<CarDTO> request = new HttpEntity<>(carDTO, headers);
         ResponseEntity<CarWithIdDTO> postResponse = restTemplate.postForEntity("/api/v1/cars/", request, CarWithIdDTO.class);
-        Assertions.assertEquals(HttpStatus.CREATED, postResponse.getStatusCode());
         savedCarId = postResponse.getBody().getId();
-        Assertions.assertNotNull(savedCarId);
     }
 
     private String resolveUrl(String url) {

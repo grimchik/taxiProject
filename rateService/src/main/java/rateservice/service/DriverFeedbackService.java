@@ -15,12 +15,17 @@ import rateservice.mapper.DriverFeedbackWithIdMapper;
 import rateservice.repository.ClientFeedbackRepository;
 import rateservice.repository.DriverFeedbackRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class DriverFeedbackService {
+    private static final Logger log = LoggerFactory.getLogger(DriverFeedbackService.class);
+
     private final ClientFeedbackRepository clientFeedbackRepository;
     private final DriverFeedbackRepository driverFeedbackRepository;
     private final DriverFeedbackWithIdMapper driverFeedbackWithIdMapper = DriverFeedbackWithIdMapper.INSTANCE;
@@ -38,6 +43,8 @@ public class DriverFeedbackService {
     @Transactional
     public DriverFeedbackWithIdDTO createFeedback(DriverFeedbackDTO driverFeedbackDTO)
     {
+        log.info("Creating driver feedback for rideId={}, driverId={}", driverFeedbackDTO.getRideId(), driverFeedbackDTO.getDriverId());
+
         Optional<DriverFeedback> existingFeedback = driverFeedbackRepository.findByRideIdAndDriverId(driverFeedbackDTO.getRideId(), driverFeedbackDTO.getDriverId());
 
         if (existingFeedback.isPresent())
@@ -66,11 +73,15 @@ public class DriverFeedbackService {
         driverFeedback.setDriverId(driverFeedbackDTO.getDriverId());
 
         driverFeedbackRepository.save(driverFeedback);
+        log.info("Driver feedback created for rideId={}, driverId={}", driverFeedback.getRideId(), driverFeedback.getDriverId());
+
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
     }
 
     public DriverFeedbackWithIdDTO getFeedback(Long id)
     {
+        log.info("Retrieving driver feedback with id={}", id);
+
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
         driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
         return driverFeedbackWithIdMapper.toDTO(driverFeedbackOptional.get());
@@ -78,6 +89,8 @@ public class DriverFeedbackService {
 
     @Transactional
     public DriverFeedbackWithIdDTO changeDriverFeedback(Long id, UpdateDriverRateDTO updateDriverRateDTO) {
+        log.info("Partially updating driver feedback with id={}", id);
+
         Optional<DriverFeedback> driverFeedbackOptional =driverFeedbackRepository.findById(id);
         driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
 
@@ -104,20 +117,28 @@ public class DriverFeedbackService {
         }
 
         driverFeedbackRepository.save(driverFeedback);
+        log.info("Driver feedback with id={} updated", id);
+
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
     }
 
     @Transactional
     public void deleteFeedback(Long id)
     {
+        log.info("Deleting driver feedback with id={}", id);
+
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
         driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
         driverFeedbackRepository.delete(driverFeedbackOptional.get());
+        log.info("Driver feedback with id={} deleted", id);
+
     }
 
     @Transactional
     public DriverFeedbackWithIdDTO updateFeedback(Long id, DriverFeedbackDTO driverFeedbackDTO)
     {
+        log.info("Updating driver feedback with id={}", id);
+
         Optional<DriverFeedback> driverFeedbackOptional = driverFeedbackRepository.findById(id);
         driverFeedbackOptional.orElseThrow(() -> new EntityNotFoundException("Feedback from driver not found"));
 
@@ -129,18 +150,26 @@ public class DriverFeedbackService {
         driverFeedback.setPolitePassenger(driverFeedbackDTO.getPolitePassenger());
 
         driverFeedbackRepository.save(driverFeedback);
+        log.info("Driver feedback with id={} updated", id);
+
         return driverFeedbackWithIdMapper.toDTO(driverFeedback);
     }
 
     public Page<DriverFeedbackWithIdDTO> getAllDriverFeedbacks(Pageable pageable) {
+        log.info("Retrieving all driver feedbacks with pagination");
+
         return driverFeedbackRepository.findAll(pageable).map(driverFeedbackWithIdMapper::toDTO);
     }
 
     public Page<DriverFeedbackWithIdDTO> getAllDriverFeedbacksById (Long driverId,Pageable pageable) {
+        log.info("Retrieving all feedbacks for driverId={} with pagination", driverId);
+
         return driverFeedbackRepository.findAllByDriverId(driverId,pageable).map(driverFeedbackWithIdMapper::toDTO);
     }
 
     public RateDTO calculateAverageRating(Long driverId) {
+        log.info("Calculating average rating for driverId={}", driverId);
+
         Page<RideWithIdDTO> rides = rideServiceClient.getRides(driverId,0,50);
 
         List<Long> rideIds = rides.getContent()
@@ -151,6 +180,8 @@ public class DriverFeedbackService {
         List<ClientFeedback> feedbacks = clientFeedbackRepository.findByRideIdIn(rideIds);
 
         if (feedbacks.isEmpty()) {
+            log.warn("No client feedbacks found for driverId={}", driverId);
+
             return new RateDTO(0.0);
         }
 
@@ -168,6 +199,8 @@ public class DriverFeedbackService {
 
         double averageRate = totalRate / count-1.0;
         double averageAttributes = totalAttributes / (count * 3);
+        log.info("Average rating for driverId={} is {}", driverId, averageRate + averageAttributes);
+
         return new RateDTO(averageRate + averageAttributes);
     }
 

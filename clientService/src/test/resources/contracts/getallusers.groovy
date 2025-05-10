@@ -1,13 +1,14 @@
-import org.springframework.cloud.contract.spec.Contract;
+import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Get All Users "
+    description "Get All Users"
     request {
         method 'GET'
-        urlPath '/api/v1/users'
-        queryParameters {
-            parameter 'page': '0'
-            parameter 'size': '5'
+        urlPath('/api/v1/users') {
+            queryParameters {
+                parameter 'page': $(consumer(regex('[0-9]+')), producer(0))
+                parameter 'size': $(consumer(regex('[0-9]+')), producer(5))
+            }
         }
     }
     response {
@@ -29,4 +30,3 @@ Contract.make {
         ])
     }
 }
-

@@ -24,11 +24,14 @@ public class ClientErrorDecoder implements ErrorDecoder {
                 String responseBody = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
                 JsonNode jsonNode = objectMapper.readTree(responseBody);
-                if (jsonNode.has("detail")) {
+                if (jsonNode.has("detail"))
+                {
                     message = jsonNode.get("detail").asText();
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             message = "Failed to read error response body";
         }
 

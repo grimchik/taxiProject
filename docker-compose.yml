@@ -1,0 +1,420 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: taxiproject
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d taxiproject"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    restart: unless-stopped
+    networks:
+      - mynetwork
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  eurekaserver:
+    build:
+      context: .
+      dockerfile: ./eurekaServer/Dockerfile
+    container_name: eurekaserver
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    depends_on:
+      - zookeeper
+      - kafka
+      - postgres
+    networks:
+      - mynetwork
+    environment:
+      SPRING_APPLICATION_NAME: eurekaserver
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8761/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: ./apiGateway/Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eurekaserver
+      - clientservice
+      - carservice
+      - driverservice
+      - paymentservice
+      - promocodeservice
+      - rateservice
+      - rideservice
+    environment:
+      SPRING_APPLICATION_NAME: apigateway
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8080/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  clientservice:
+    build:
+      context: .
+      dockerfile: ./clientService/Dockerfile
+    container_name: client-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8081:8081"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8081/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  driverservice:
+    build:
+      context: .
+      dockerfile: ./driverService/Dockerfile
+    container_name: driver-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8082:8082"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8082/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  carservice:
+    build:
+      context: .
+      dockerfile: ./carService/Dockerfile
+    container_name: car-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8083:8083"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8083/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  rideservice:
+    build:
+      context: .
+      dockerfile: ./rideService/Dockerfile
+    container_name: ride-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+
+    ports:
+      - "8084:8084"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8084/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  rateservice:
+    build:
+      context: .
+      dockerfile: ./rateService/Dockerfile
+    container_name: rate-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8085:8085"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8085/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  promocodeservice:
+    build:
+      context: .
+      dockerfile: ./promoCodeService/Dockerfile
+    container_name: promo-code-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8090:8090"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8090/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  paymentservice:
+    build:
+      context: .
+      dockerfile: ./paymentService/Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    depends_on:
+      - eurekaserver
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/taxiproject
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eurekaserver:8761/eureka/
+      SPRING_MVC_TIMEZONE: Europe/Minsk
+    ports:
+      - "8091:8091"
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8091/"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - mynetwork
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  elasticsearch:
+    image: bitnami/elasticsearch:latest
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - mynetwork
+    volumes:
+      - elasticsearch-data:/bitnami/elasticsearch
+    healthcheck:
+      test: [ "CMD", "curl", "--silent", "--fail", "http://localhost:9200" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  logstash:
+    image: bitnami/logstash:latest
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "5044:5044"
+    networks:
+      - mynetwork
+    volumes:
+      - ./logstash.conf:/bitnami/logstash/pipeline/logstash.conf
+
+  kibana:
+    image: bitnami/kibana:latest
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=password
+    ports:
+      - "5601:5601"
+    networks:
+      - mynetwork
+    depends_on:
+      - elasticsearch
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - mynetwork
+    volumes:
+       - grafana-storage:/var/lib/grafana
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - mynetwork
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "8089:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloakdb
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+    networks:
+      - mynetwork
+    depends_on:
+      - postgres
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - mynetwork
+    depends_on:
+      - postgres
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  pg_data:
+  pgadmin-data:
+  elasticsearch-data:
+  grafana-storage:
