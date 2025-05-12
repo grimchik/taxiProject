@@ -1,5 +1,8 @@
 package rateservice.configuration;
 
+import feign.RequestInterceptor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import rateservice.errordecoder.ClientErrorDecoder;
 import feign.codec.ErrorDecoder;
 import feign.okhttp.OkHttpClient;
@@ -16,5 +19,15 @@ public class FeignConfiguration {
     @Bean
     public OkHttpClient client() {
         return new OkHttpClient();
+    }
+
+    @Bean
+    public RequestInterceptor requestInterceptor() {
+        return requestTemplate -> {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.getCredentials() instanceof String jwt) {
+                requestTemplate.header("Authorization", "Bearer " + jwt);
+            }
+        };
     }
 }
