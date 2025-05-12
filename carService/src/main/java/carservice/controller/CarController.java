@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class CarController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCar (@Valid @RequestBody CarDTO carDTO)
     {
         log.info("POST /cars - Creating car: {}", carDTO);
@@ -30,6 +32,7 @@ public class CarController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllCars (@RequestParam(value = "page",defaultValue = "0") Integer page,
                                          @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
@@ -38,6 +41,7 @@ public class CarController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCar (@PathVariable("id") Long id)
     {
         log.info("GET /cars/{} - Retrieving car by id", id);
@@ -45,6 +49,7 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCarById(@PathVariable("id")Long id)
     {
         log.info("DELETE /cars/{} - Deleting car", id);
@@ -53,6 +58,7 @@ public class CarController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateCarById(@PathVariable("id")Long id,@Valid @RequestBody CarDTO carDTO)
     {
         log.info("PUT /cars/{} - Updating car: {}", id, carDTO);
@@ -60,6 +66,7 @@ public class CarController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeCar(@PathVariable("id")Long id,@Valid @RequestBody UpdateCarDTO updateCarDTO)
     {
         log.info("PATCH /cars/{} - Partially updating car: {}", id, updateCarDTO);

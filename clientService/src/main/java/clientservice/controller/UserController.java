@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
@@ -36,6 +37,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> deleteUserById(@PathVariable("id") Long id) {
         log.info("DELETE /users - Deleting user with ID: {}", id);
         userService.deleteUserById(id);
@@ -43,6 +45,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> changePassword(@PathVariable("id") Long id,
                                             @RequestBody @Valid UpdateUserDTO updateUserDTO) {
         log.info("PATCH /users - Changing password for user with ID: {}", id);
@@ -50,12 +53,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getProfile(@PathVariable("id") Long id) {
         log.info("GET /users - Retrieving user profile by ID: {}", id);
         return new ResponseEntity<>(userService.getUserProfile(id), HttpStatus.OK);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllProfiles(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                             @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /users - Retrieving all users, page={}, size={}", page, size);
@@ -63,6 +68,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> updateProfile(@PathVariable("id") Long id,
                                            @RequestBody @Valid UserDTO userDTO) {
         log.info("PUT /users - Updating user with ID: {}", id);
@@ -70,6 +76,7 @@ public class UserController {
     }
 
     @PostMapping("/create-ride/{userId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> createRide(@PathVariable("userId") Long userId,
                                         @RequestBody RideDTO rideDTO) {
         log.info("POST /users/create-ride - Creating ride for user ID: {}", userId);
@@ -77,6 +84,7 @@ public class UserController {
     }
 
     @GetMapping("/user-rides/{userId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getUserRides(@PathVariable("userId") Long userId,
                                           @RequestParam(value = "page", defaultValue = "0") Integer page,
                                           @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -85,6 +93,7 @@ public class UserController {
     }
 
     @PatchMapping("{userId}/update-ride/{rideId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> updateRide(@PathVariable("userId") Long userId,
                                         @PathVariable("rideId") Long rideId,
                                         @RequestBody UpdateRideDTO updateRideDTO) {
@@ -93,6 +102,7 @@ public class UserController {
     }
 
     @PostMapping("{userId}/cancel-ride/{rideId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> cancelRide(@PathVariable("rideId") Long rideId,
                                         @PathVariable("userId") Long userId) {
         log.info("POST /users/cancel-ride - Cancelling ride ID: {} for user ID: {}", rideId, userId);
@@ -102,6 +112,7 @@ public class UserController {
     }
 
     @PostMapping("/apply-promocode")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> applyPromocode(@Valid @RequestBody CheckPromoCodeDTO checkPromoCodeDTO) {
         log.info("POST /users/apply-promocode - Applying promocode: {}", checkPromoCodeDTO.getKeyword());
         userService.checkPromoCode(checkPromoCodeDTO);
@@ -109,6 +120,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/create-feedback")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> createFeedback(@PathVariable("userId") Long userId,
                                             @RequestBody ClientFeedbackDTO clientFeedbackDTO) {
         log.info("POST /users/create-feedback - Creating feedback for user ID: {}", userId);
@@ -116,6 +128,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/user-feedbacks")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("userId") Long userId,
                                               @RequestParam(value = "page", defaultValue = "0") Integer page,
                                               @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -124,12 +137,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/user-rate")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getUserRate(@PathVariable("userId") Long userId) {
         log.info("GET /users/user-rate - Getting rate for user ID: {}", userId);
         return new ResponseEntity<>(userService.getUserRate(userId), HttpStatus.OK);
     }
 
     @PatchMapping("/update-feedback/{feedbackId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> updateFeedback(@PathVariable("feedbackId") Long feedbackId,
                                             @RequestBody UpdateClientRateDTO updateClientRateDTO) {
         log.info("PATCH /users/update-feedback - Updating feedback ID: {}", feedbackId);
@@ -137,6 +152,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/payments")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getAllPaymentsByUser(@PathVariable("userId") Long userId,
                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                   @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -145,12 +161,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/pending-payments")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> getPendingPayment(@PathVariable("userId") Long userId) {
         log.info("GET /users/pending-payments - Getting pending payments for user ID: {}", userId);
         return new ResponseEntity<>(userService.getPendingPaymentByUser(userId), HttpStatus.OK);
     }
 
     @PatchMapping("/{userId}/confirmed-payment/{paymentId}")
+    @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> confirmedPayment(@PathVariable("userId") Long userId,
                                               @PathVariable("paymentId") Long paymentId,
                                               @Valid @RequestBody ConfirmedPaymentDTO confirmedPaymentDTO) {
@@ -167,6 +185,7 @@ public class UserController {
     //____________________________________________________
 
     @GetMapping("/all-cars")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllCars(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                         @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /users/all-cars - Getting all cars, page={}, size={}", page, size);
@@ -174,12 +193,14 @@ public class UserController {
     }
 
     @PostMapping("/create-car")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCar(@RequestBody CarDTO carCreateDTO) {
         log.info("POST /users/create-car - Creating new car: {}", carCreateDTO.getModel());
         return new ResponseEntity<>(userService.createCar(carCreateDTO), HttpStatus.CREATED);
     }
 
     @PatchMapping("/change-car/{carId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeCar(@PathVariable("carId") Long carId,
                                        @RequestBody UpdateCarDTO updateCarDTO) {
         log.info("PATCH /users/change-car - Updating car ID: {}", carId);
@@ -187,6 +208,7 @@ public class UserController {
     }
 
     @DeleteMapping("/delete-car/{carId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteCar(@PathVariable("carId") Long carId) {
         log.info("DELETE /users/delete-car - Deleting car ID: {}", carId);
         userService.deleteCar(carId);
@@ -198,6 +220,7 @@ public class UserController {
     //____________________________________________________
 
     @GetMapping("/all-promocodes")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllPromoCodes(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                               @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /users/all-promocodes - Getting all promocodes, page={}, size={}", page, size);
@@ -205,12 +228,14 @@ public class UserController {
     }
 
     @PostMapping("/create-promocode")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createPromoCode(PromoCodeDTO promoCodeDTO) {
         log.info("POST /users/create-promocode - Creating new promocode: {}", promoCodeDTO.getKeyword());
         return new ResponseEntity<>(userService.createPromoCode(promoCodeDTO), HttpStatus.CREATED);
     }
 
     @PatchMapping("/change-promocode/{promoCodeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changePromoCode(@PathVariable("promoCodeId") Long promoCodeId,
                                              @RequestBody UpdatePromoCodeDTO updatePromoCodeDTO) {
         log.info("PATCH /users/change-promocode - Updating promocode ID: {}", promoCodeId);
@@ -218,6 +243,7 @@ public class UserController {
     }
 
     @DeleteMapping("/delete-promocode/{promoCodeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deletePromoCode(@PathVariable("promoCodeId") Long promoCodeId) {
         log.info("DELETE /users/delete-promocode - Deleting promocode ID: {}", promoCodeId);
         userService.deletePromoCode(promoCodeId);

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import paymentservice.dto.ConfirmedPaymentDTO;
@@ -24,6 +25,7 @@ public class PaymentController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createPayment(@Valid @RequestBody PaymentDTO paymentDTO) {
         log.info("POST /payments - Creating new payment for user ID: {}, ride ID: {}", paymentDTO.getUserId(), paymentDTO.getRideId());
 
@@ -31,6 +33,7 @@ public class PaymentController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePayment(@PathVariable("id") Long id, @Valid @RequestBody UpdatePaymentDTO updatePaymentDTO) {
         log.info("PATCH /payments - Patching payment with ID: {}", id);
 
@@ -38,6 +41,7 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePayment(@PathVariable("id") Long id, @Valid @RequestBody PaymentDTO updatePaymentDTO) {
         log.info("PUT /payments - Fully updating payment with ID: {}", id);
 
@@ -45,6 +49,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deletePayment(@PathVariable("id") Long id) {
         log.info("DELETE /payments - Deleting payment with ID: {}", id);
         paymentService.deletePayment(id);
@@ -52,12 +57,14 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getPayment(@PathVariable("id") Long id) {
         log.info("GET /payments - Getting payment with ID: {}", id);
         return new ResponseEntity<>(paymentService.getPayment(id), HttpStatus.OK);
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllPayments (@RequestParam(value = "page",defaultValue = "0") Integer page,
                                              @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
@@ -67,6 +74,7 @@ public class PaymentController {
     }
 
     @GetMapping("/user-payments/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllPaymentsByUser(@PathVariable("userId") Long userId,
                                                   @RequestParam(value = "page",defaultValue = "0") Integer page,
                                                   @RequestParam(value = "size",defaultValue = "5") Integer size)
@@ -77,6 +85,7 @@ public class PaymentController {
     }
 
     @GetMapping("/user-pending-payments/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getPendingPaymentByUser(@PathVariable("userId") Long userId)
     {
         log.info("GET /payments/user-pending-payments - Getting pending payments for user ID: {}", userId);
@@ -85,6 +94,7 @@ public class PaymentController {
     }
 
     @PatchMapping("/{userId}/confirmed-payment/{paymentId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> confirmedPayment(@PathVariable("userId") Long userId,
                                               @PathVariable("paymentId") Long paymentId,
                                               @Valid @RequestBody ConfirmedPaymentDTO confirmedPaymentDTO)

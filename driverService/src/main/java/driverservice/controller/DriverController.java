@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class DriverController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getProfileById(@RequestParam(value = "page",defaultValue = "0") Integer page,
                                             @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
@@ -34,6 +36,7 @@ public class DriverController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getDriverById(@PathVariable("id") Long id)
     {
         log.info("GET /drivers/{} - Getting driver by ID", id);
@@ -55,6 +58,7 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> updateProfile(@PathVariable("id") Long id,@Valid @RequestBody DriverDTO driverDTO)
     {
         log.info("PUT /drivers/{} - Updating driver", id);
@@ -62,6 +66,7 @@ public class DriverController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> changeDriver(@PathVariable("id") Long id,@Valid @RequestBody UpdateDriverDTO updateDriverDTO)
     {
         log.info("PATCH /drivers/{} - Partially updating driver", id);
@@ -69,6 +74,7 @@ public class DriverController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> deleteDriver(@PathVariable("id") Long id)
     {
         log.info("DELETE /drivers/{} - Deleting driver", id);
@@ -77,6 +83,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/create-feedback")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> createFeedback (@PathVariable("driverId") Long driverId,
                                              @RequestBody DriverFeedbackDTO driverFeedbackDTO)
     {
@@ -85,6 +92,7 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/driver-feedbacks")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("driverId") Long driverId,
                                               @RequestParam(value = "page", defaultValue = "0") Integer page,
                                               @RequestParam(value = "size", defaultValue = "5") Integer size)
@@ -94,6 +102,7 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/driver-rate")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getUserFeedbacks(@PathVariable("driverId") Long driverId)
     {
         log.info("GET /drivers/{}/driver-rate - Getting driver rate", driverId);
@@ -101,6 +110,7 @@ public class DriverController {
     }
 
     @PatchMapping("/{driverId}/update-feedback/{feedbackId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> updateFeedback(@PathVariable("driverId") Long driverId,
                                             @PathVariable("feedbackId") Long feedbackId,
                                             @RequestBody UpdateDriverRateDTO updateDriverRateDTO)
@@ -110,6 +120,7 @@ public class DriverController {
     }
 
     @GetMapping("/available-rides")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getAvailableRides (@RequestParam(value = "page",defaultValue = "0") Integer page,
                                                 @RequestParam(value = "size",defaultValue = "5") Integer size)
     {
@@ -118,6 +129,7 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/completed-rides")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getCompletedRides (@PathVariable("driverId") Long  driverId,
                                                 @RequestParam(value = "page",defaultValue = "0") Integer page,
                                                 @RequestParam(value = "size",defaultValue = "5") Integer size)
@@ -127,6 +139,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/assign-car/{carId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> assignCarToDriver(@PathVariable("driverId") Long  driverId,
                                                @PathVariable("carId") Long  carId)
     {
@@ -135,6 +148,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/unassign-car/{carId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> unassignCarFromDriver(@PathVariable("driverId") Long driverId,
                                                    @PathVariable("carId") Long carId)
     {
@@ -143,6 +157,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/apply-ride/{rideId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> applyRide (@PathVariable("driverId") Long driverId,
                                         @PathVariable("rideId") Long rideId)
     {
@@ -151,6 +166,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/cancel-ride/{rideId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> cancelRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -162,6 +178,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/start-ride/{rideId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> startRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -173,6 +190,7 @@ public class DriverController {
     }
 
     @PostMapping("/{driverId}/finish-ride/{rideId}")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> finishRide(
             @PathVariable("rideId") Long rideId,
             @PathVariable("driverId") Long driverId)
@@ -184,6 +202,7 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/completed-rides-period")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getCompletedRidesPeriod(@PathVariable("driverId") Long driverId,
                                                      @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                      @RequestParam(value = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
@@ -195,6 +214,7 @@ public class DriverController {
     }
 
     @GetMapping("/{driverId}/earning")
+    @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<?> getEarnings(
             @PathVariable("driverId") Long driverId,
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,

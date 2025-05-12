@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +27,21 @@ public class RideController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createRide(@Valid @RequestBody RideDTO rideDTO) {
         log.info("POST /rides - Creating new ride from user ID: {}", rideDTO.getUserId());
         return new ResponseEntity<>(rideService.createRide(rideDTO), HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeRide(@PathVariable("id") Long id, @Valid @RequestBody UpdateRideDTO updateRideDTO) {
         log.info("PATCH /rides/{} - Updating ride status", id);
         return new ResponseEntity<>(rideService.changeRide(id, updateRideDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteRide(@PathVariable("id") Long id) {
         log.info("DELETE /rides/{} - Deleting ride", id);
         rideService.deleteRideById(id);
@@ -45,12 +49,14 @@ public class RideController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getRideById(@PathVariable("id") Long id) {
         log.info("GET /rides/{} - Retrieving ride by ID", id);
         return new ResponseEntity<>(rideService.getRideById(id), HttpStatus.OK);
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllRides(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                          @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /rides - Retrieving all rides, page={}, size={}", page, size);
@@ -58,6 +64,7 @@ public class RideController {
     }
 
     @GetMapping("/user-rides/{userId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllRidesByUserId(@PathVariable("userId") Long userId,
                                                  @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                  @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -66,6 +73,7 @@ public class RideController {
     }
 
     @GetMapping("/driver-rides/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllRidesByDriverId(@PathVariable("driverId") Long driverId,
                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                    @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -74,6 +82,7 @@ public class RideController {
     }
 
     @GetMapping("/available-rides")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllAvailableRides(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                                   @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /rides/available-rides - Retrieving all available rides, page={}, size={}", page, size);
@@ -81,6 +90,7 @@ public class RideController {
     }
 
     @GetMapping("/completed-rides/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCompletedRides(@PathVariable("driverId") Long driverId,
                                                @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -89,12 +99,14 @@ public class RideController {
     }
 
     @GetMapping("/active-ride/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getActiveRide(@PathVariable("driverId") Long driverId) {
         log.info("GET /rides/active-ride/{} - Retrieving active ride for driver", driverId);
         return new ResponseEntity<>(rideService.getActiveRide(driverId), HttpStatus.OK);
     }
 
     @PostMapping("/apply-ride/{rideId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> applyRide(@PathVariable("rideId") Long rideId,
                                        @Valid @RequestBody CarAndDriverIdDTO carAndDriverIdDTO) {
         log.info("POST /rides/apply-ride/{} - Driver ID {} applying with car ID {}", rideId, carAndDriverIdDTO.getDriverId(), carAndDriverIdDTO.getCarId());
@@ -102,6 +114,7 @@ public class RideController {
     }
 
     @GetMapping("/completed-rides-period/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCompletedRidesPeriod(@PathVariable("driverId") Long driverId,
                                                      @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                      @RequestParam(value = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
@@ -112,6 +125,7 @@ public class RideController {
     }
 
     @GetMapping("/earning/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCompletedRidesPeriod(@PathVariable("driverId") Long driverId,
                                                      @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
                                                      @RequestParam(value = "end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {

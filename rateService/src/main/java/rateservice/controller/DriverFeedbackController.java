@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class DriverFeedbackController {
     }
 
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createFeedback(@Valid @RequestBody DriverFeedbackDTO driverFeedbackDTO) {
         log.info("POST /driver-feedbacks - Creating new feedback from driver ID: {}, to ride ID: {}",
                 driverFeedbackDTO.getDriverId(), driverFeedbackDTO.getRideId());
@@ -30,12 +32,14 @@ public class DriverFeedbackController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getFeedback(@PathVariable("id") Long id) {
         log.info("GET /driver-feedbacks/{} - Retrieving feedback by ID", id);
         return new ResponseEntity<>(driverFeedbackService.getFeedback(id), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changeDriverFeedback(@PathVariable("id") Long id,
                                                   @Valid @RequestBody UpdateDriverRateDTO updateDriverRateDTO) {
         log.info("PATCH /driver-feedbacks/{} - Partially updating feedback", id);
@@ -43,6 +47,7 @@ public class DriverFeedbackController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteFeedback(@PathVariable("id") Long id) {
         log.info("DELETE /driver-feedbacks/{} - Deleting feedback", id);
         driverFeedbackService.deleteFeedback(id);
@@ -50,6 +55,7 @@ public class DriverFeedbackController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateFeedback(@PathVariable("id") Long id,
                                             @Valid @RequestBody DriverFeedbackDTO driverFeedbackDTO) {
         log.info("PUT /driver-feedbacks/{} - Fully updating feedback", id);
@@ -57,6 +63,7 @@ public class DriverFeedbackController {
     }
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllDriverFeedbacks(@RequestParam(value = "page", defaultValue = "0") Integer page,
                                                    @RequestParam(value = "size", defaultValue = "5") Integer size) {
         log.info("GET /driver-feedbacks - Retrieving all driver feedbacks, page={}, size={}", page, size);
@@ -64,6 +71,7 @@ public class DriverFeedbackController {
     }
 
     @GetMapping("/driver-feedbacks/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getAllDriverFeedbacksByUserId(@PathVariable("driverId") Long driverId,
                                                            @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                            @RequestParam(value = "size", defaultValue = "5") Integer size) {
@@ -72,6 +80,7 @@ public class DriverFeedbackController {
     }
 
     @GetMapping("/driver-rate/{driverId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getUserRate(@PathVariable("driverId") Long driverId) {
         log.info("GET /driver-feedbacks/driver-rate/{} - Calculating average rating for driver ID", driverId);
         return new ResponseEntity<>(driverFeedbackService.calculateAverageRating(driverId), HttpStatus.OK);
