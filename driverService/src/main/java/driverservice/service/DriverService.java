@@ -22,12 +22,16 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 public class DriverService {
+    private static final Logger log = LoggerFactory.getLogger(DriverService.class);
+
     private final DriverRepository driverRepository;
     private final PasswordEncoder passwordEncoder;
     private final DriverMapper driverMapper = DriverMapper.INSTANCE;
@@ -41,10 +45,14 @@ public class DriverService {
     private final CancelRideByDriverProducer cancelRideByDriverProducer;
     private final RideInProgressProducer rideInProgressProducer;
     private final FinishRideProducer finishRideProducer;
+
+    private final KeycloakDriverService keycloakDriverService;
+
     public DriverService(DriverRepository driverRepository, PasswordEncoder passwordEncoder,
                          RideServiceClient rideServiceClient, DriverFeedbackServiceClient driverFeedbackServiceClient,
                          CarServiceClient carServiceClient,CancelRideByDriverProducer cancelRideByDriverProducer,
-                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer) {
+                         RideInProgressProducer rideInProgressProducer,FinishRideProducer finishRideProducer,
+                         KeycloakDriverService keycloakDriverService) {
         this.driverRepository = driverRepository;
         this.passwordEncoder = passwordEncoder;
         this.rideServiceClient = rideServiceClient;
@@ -53,23 +61,35 @@ public class DriverService {
         this.cancelRideByDriverProducer=cancelRideByDriverProducer;
         this.rideInProgressProducer=rideInProgressProducer;
         this.finishRideProducer=finishRideProducer;
+        this.keycloakDriverService=keycloakDriverService;
     }
 
     public DriverWithIdDTO createDriver(DriverDTO driverDTO) {
+        log.info("Creating driver with username: {}", driverDTO.getUsername());
+
         if (driverRepository.findByUsername(driverDTO.getUsername()).isPresent()) {
             throw new EntityExistsException("Driver with the same username already exists");
         }
         if (driverRepository.findByPhone(driverDTO.getPhone()).isPresent()) {
             throw new EntityExistsException("Driver with the same phone already exists");
         }
+        String keycloakId = keycloakDriverService.registerDriver(driverDTO);
+        log.info("User registered in Keycloak with ID: {}", keycloakId);
+
         Driver driver = driverMapper.toEntity(driverDTO);
         driver.setPassword(passwordEncoder.encode(driverDTO.getPassword()));
         driverRepository.save(driver);
         return driverWithIdMapper.toDTO(driver);
     }
 
+    public TokenResponseDTO loginDriver (AuthDTO authDTO)
+    {
+        return keycloakDriverService.loginDriver(authDTO);
+    }
+
     @Transactional
     public void deleteById(Long id) {
+        log.info("Deleting driver with id: {}", id);
         Driver driver = findActiveDriverById(id);
         driverRepository.softDeleteByUsername(driver.getUsername());
     }
@@ -88,16 +108,19 @@ public class DriverService {
     }
 
     public DriverWithIdDTO getDriverById(Long id) {
+        log.info("Retrieving profile for driver ID: {}", id);
         Driver driver = findActiveDriverById(id);
         return driverWithIdMapper.toDTO(driver);
     }
 
     public Page<DriverWithIdDTO> getAllDrivers(Pageable pageable) {
+        log.info("Retrieving all driver profiles, page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         return driverRepository.findAll(pageable).map(driverWithIdMapper::toDTO);
     }
 
     @Transactional
     public DriverWithoutPasswordDTO updateProfile(Long id, DriverDTO driverDTO) {
+        log.info("Updating profile for driver ID: {}", id);
         Driver driver = findActiveDriverById(id);
         checkUsername(driver, driverDTO.getUsername());
         checkPhone(driver, driverDTO.getPhone());
@@ -112,6 +135,7 @@ public class DriverService {
 
     @Transactional
     public DriverWithIdDTO changeDriver(Long id, UpdateDriverDTO updateDriverDTO) {
+        log.info("Partially updating driver with ID: {}", id);
         Driver driver = findActiveDriverById(id);
 
         if (updateDriverDTO.getUsername() != null && !updateDriverDTO.getUsername().isBlank()) {
@@ -159,34 +183,42 @@ public class DriverService {
 
     public Page<RideWithIdDTO> getAvailableRides (Integer page, Integer size)
     {
+        log.info("Fetching available rides, page={}, size={}", page, size);
         return rideServiceClient.getAvailableRides(page,size);
     }
 
     public Page<RideWithIdDTO> getCompletedRides (Long driverId,Integer page, Integer size)
     {
+        log.info("Fetching completed rides for driver ID: {}, page={}, size={}", driverId, page, size);
         driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getCompletedRides(driverId,page,size);
     }
 
     public Page<DriverFeedbackWithIdDTO> getAllFeedbacks (Long driverId, Integer page, Integer size)
     {
+        log.info("Retrieving all feedbacks for driver ID: {}, page={}, size={}", driverId, page, size);
+
         driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return driverFeedbackServiceClient.getFeedbacks(driverId,page,size);
     }
 
     public RateDTO getDriverRate(Long driverId)
     {
+        log.info("Getting driver rating for driver ID: {}", driverId);
+
         driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return driverFeedbackServiceClient.getDriverRate(driverId);
     }
 
     public DriverFeedbackWithIdDTO changeFeedback(Long driverId,Long feedbackId, UpdateDriverRateDTO updateDriverRateDTO) {
+        log.info("Updating feedback with ID: {}", feedbackId);
         findActiveDriverById(driverId);
         return driverFeedbackServiceClient.changeFeedBack(feedbackId,updateDriverRateDTO);
     }
 
     public DriverFeedbackWithIdDTO createFeedback(Long driverId,DriverFeedbackDTO driverFeedbackDTO)
     {
+        log.info("Creating feedback for driver ID: {}", driverId);
         findActiveDriverById(driverId);
         driverFeedbackDTO.setDriverId(driverId);
         return driverFeedbackServiceClient.createDriverFeedback(driverFeedbackDTO);
@@ -200,6 +232,7 @@ public class DriverService {
     @Transactional
     public DriverWithIdDTO assignCarToDriver(Long driverId, Long carId)
     {
+        log.info("Assign car with ID {} to driver with ID {}", carId, driverId);
         Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
@@ -228,6 +261,7 @@ public class DriverService {
     @Transactional
     public DriverWithIdDTO unassignCarFromDriver(Long driverId, Long carId)
     {
+        log.info("Unassign car with ID {} from driver with ID {}", carId, driverId);
         Optional<Driver> driverOptional = driverRepository.findDriverByCarId(carId);
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new EntityNotFoundException("Driver not found"));
@@ -248,6 +282,8 @@ public class DriverService {
 
     public RideWithIdDTO applyRide(Long rideId,Long driverId)
     {
+        log.info("Driver with ID {} is applying for ride with ID {}", driverId, rideId);
+
         Driver driver = findActiveDriverById(driverId);
         if (driver.getCarId() == null)
         {
@@ -259,29 +295,37 @@ public class DriverService {
     }
 
     public void cancelRide(CanceledRideByDriverDTO canceledRideByDriverDTO) {
+        log.info("Driver with ID {} is cancelling ride", canceledRideByDriverDTO.getDriverId());
+
         findActiveDriverById(canceledRideByDriverDTO.getDriverId());
         cancelRideByDriverProducer.sendCancelRequest(canceledRideByDriverDTO);
     }
 
     public void startRide(RideInProgressDTO rideInProgressDTO) {
+        log.info("Driver with ID {} is starting ride with ID {}", rideInProgressDTO.getDriverId(), rideInProgressDTO.getRideId());
+
         findActiveDriverById(rideInProgressDTO.getDriverId());
         rideInProgressProducer.sendRideInProgressRequest(rideInProgressDTO);
     }
 
     public void finishRide(FinishRideDTO finishRideDTO)
     {
+        log.info("Driver with ID {} is finishing ride with ID {}", finishRideDTO.getDriverId(), finishRideDTO.getRideId());
+
         findActiveDriverById(finishRideDTO.getDriverId());
         finishRideProducer.sendFinishRequest(finishRideDTO);
     }
 
     public Page<RideWithIdDTO> getCompletedRidesPeriod(Long driverId, LocalDateTime start, LocalDateTime end, int page, int size)
     {
+        log.info("Fetching completed rides for driver ID {} from {} to {}", driverId, start, end);
         driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getCompletedRidesPeriod(driverId,start,end,page,size);
     }
 
     public EarningDTO getEarnings(Long driverId, LocalDateTime start, LocalDateTime end)
     {
+        log.info("Fetching earnings for driver ID {} from {} to {}", driverId, start, end);
         driverRepository.findById(driverId).orElseThrow(() -> new EntityNotFoundException("Driver not found"));
         return rideServiceClient.getEarnings(driverId,start,end);
     }

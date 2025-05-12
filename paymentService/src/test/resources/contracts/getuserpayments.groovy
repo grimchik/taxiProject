@@ -4,11 +4,10 @@ Contract.make {
     description "Get Payments by User with pagination"
     request {
         method 'GET'
-        urlPath '/api/v1/payments/user-payments/1'
-        {
+        urlPath('/api/v1/payments/user-payments/1') {
             queryParameters {
-                parameter 'page': '0'
-                parameter 'size': '5'
+                parameter 'page': $(consumer(regex('[0-9]+')), producer(0))
+                parameter 'size': $(consumer(regex('[0-9]+')), producer(5))
             }
         }
     }
